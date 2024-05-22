@@ -29,7 +29,7 @@
 ## 部署
 
 ### 通过 Docker 部署
-执行：`docker run --restart=always -d -p 3000:3000 davoola/onelinechat`
+执行：`docker run --restart=always -d -p 3000:3000 davoola/onlinechat:v2`
 
 开放的端口号为 3000，之后用 Nginx 配置域名，反代以及 SSL 证书即可。
 
