@@ -7,7 +7,7 @@
 
 特点如下（来自[chat-room](https://github.com/songquanpeng/chat-room/)）：
 1. 支持发送图片消息，音频消息，视频消息以及文件消息。
-2. 有配套的[安卓客户端](https://github.com/songquanpeng/chat-room-android)。
+2. 支持聊天窗口自动嵌入分享的YouTube链接。
 3. 支持多房间，每个链接都是一个独立的聊天室，例如： https://onlinechat-0iyv.onrender.com/roomID
 4. 支持管理员踢人，输入 `kick username` 即可。
 5. 第一个进入房间的自动成为管理员。
@@ -29,7 +29,7 @@
 ## 部署
 
 ### 通过 Docker 部署
-执行：`docker run --restart=always -d -p 3000:3000 davoola/onlinechat:v2`
+执行：`docker run --restart=always -d -p 3000:3000 davoola/onlinechat:latest`
 
 开放的端口号为 3000，之后用 Nginx 配置域名，反代以及 SSL 证书即可。
 
