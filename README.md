@@ -44,7 +44,7 @@ services:
         restart: always
         ports:
             - 3000:3000
-        image: davoola/onlinechat:v2
+        image: davoola/onlinechat:latest
 ```
 
 ### 通过源码部署
