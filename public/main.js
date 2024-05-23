@@ -108,50 +108,62 @@ function printMessage(content, sender = "Admin", type = "TEXT") {
   let firstChar = sender[0];
   //Add time
   let sendTime = new Date().toLocaleString(); // 获取当前时间
-  let formattedSender = `${sender} | ${sendTime}`; // 添加发送时间
-  let formattted
-  switch (type) {
-    case "IMAGE":
-      html = `<div class="chat-message shown">
-    <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
-    <div class="nickname">${formattedSender}</div>
-    <div class="message-box"><img src="${content}" alt="${content}"></div>
-</div>`
-      break;
-    case "AUDIO":
-      html = `<div class="chat-message shown">
-    <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
-    <div class="nickname">${formattedSender}</div>
-    <div class="message-box"><audio controls src="${content}"></div>
-</div>`
-      break;
-    case "VIDEO":
-      html = `<div class="chat-message shown">
-    <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
-    <div class="nickname">${formattedSender}</div>
-    <div class="message-box"><video controls><source src="${content}"></video></div>
-</div>`
-      break;
-    case "FILE":
-      let parts = content.split('/');
-      let text = parts[parts.length - 1];
-      html = `<div class="chat-message shown">
-    <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
-    <div class="nickname">${formattedSender}</div>
-    <div class="message-box"><a href="${content}" download="${text}">${text}</a></div>
-</div>`
-      break;
-    case "TEXT":
-    default:
-      html = `<div class="chat-message shown">
-    <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
-    <div class="nickname">${formattedSender}</div>
-    <div class="message-box"><p>${content}</p></div>
-</div>`
-      break;
-  } 
-  
+  let formattedSender = `${sender} | ${sendTime}`; // 添加发送时间  
 
+  // 检查消息内容是否包含 YouTube 视频链接
+  const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(?:embed\/)?(?:v\/)?(?:shorts\/)?(?:\S+)/g;
+  const YOUTUBE = content.match(youtubeRegex); 
+  const videoId = YOUTUBE[0].split(/v=|v\/|embed\/|youtu\.be\/|shorts\//)[1].split(/[?&]/)[0];
+  
+	switch (type) {
+		case "IMAGE":
+			html = `<div class="chat-message shown">
+		<div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
+		<div class="nickname">${formattedSender}</div>
+		<div class="message-box"><img src="${content}" alt="${content}"></div>
+			</div>`
+			break;
+		case "AUDIO":
+			html = `<div class="chat-message shown">
+		<div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
+		<div class="nickname">${formattedSender}</div>
+		<div class="message-box"><audio controls src="${content}"></div>
+			</div>`
+			break;
+		case "VIDEO":
+			html = `<div class="chat-message shown">
+		<div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
+		<div class="nickname">${formattedSender}</div>
+		<div class="message-box"><video controls><source src="${content}"></video></div>
+			</div>`
+			break;
+		case "YOUTUBE":
+			html = `<div class="chat-message shown">
+		<div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
+		<div class="nickname">${formattedSender}</div>
+		<div class="message-box">
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0"  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+		</div>
+		</div>`
+			break;
+		case "FILE":
+			let parts = content.split('/');
+			let text = parts[parts.length - 1];
+			html = `<div class="chat-message shown">
+		<div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
+		<div class="nickname">${formattedSender}</div>
+		<div class="message-box"><a href="${content}" download="${text}">${text}</a></div>
+			</div>`
+			break;
+		case "TEXT":
+			default:
+			html = `<div class="chat-message shown">
+		<div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
+		<div class="nickname">${formattedSender}</div>
+		<div class="message-box"><p>${content}</p></div>
+			</div>`
+			break;
+				} 		
   
   dialogElement.insertAdjacentHTML('beforeend', html)
   dialogElement.scrollTop = dialogElement.scrollHeight;
