@@ -112,9 +112,23 @@ function printMessage(content, sender = "Admin", type = "TEXT") {
 
   // 检查消息内容是否包含 YouTube 视频链接
   const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(?:embed\/)?(?:v\/)?(?:shorts\/)?(?:\S+)/g;
-  const YOUTUBE = content.match(youtubeRegex); 
-  const videoId = YOUTUBE[0].split(/v=|v\/|embed\/|youtu\.be\/|shorts\//)[1].split(/[?&]/)[0];
-  
+  const youtubeMatch = content.match(youtubeRegex); 
+
+  if (youtubeMatch) {
+    // 提取 YouTube 视频 ID
+    const videoId = youtubeMatch[0].split(/v=|v\/|embed\/|youtu\.be\/|shorts\//)[1].split(/[?&]/)[0];
+
+    // 生成 YouTube 嵌入式播放器的 HTML 代码
+    html = `<div class="chat-message shown">
+      <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
+      <div class="nickname">${formattedSender}</div>
+      <div class="message-box">
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0"  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+      </div>
+    </div>`;
+  } 
+  else {
+    // 处理其他类型的消息
 	switch (type) {
 		case "IMAGE":
 			html = `<div class="chat-message shown">
@@ -137,15 +151,6 @@ function printMessage(content, sender = "Admin", type = "TEXT") {
 		<div class="message-box"><video controls><source src="${content}"></video></div>
 			</div>`
 			break;
-		case "YOUTUBE":
-			html = `<div class="chat-message shown">
-		<div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
-		<div class="nickname">${formattedSender}</div>
-		<div class="message-box">
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0"  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-		</div>
-		</div>`
-			break;
 		case "FILE":
 			let parts = content.split('/');
 			let text = parts[parts.length - 1];
@@ -163,7 +168,9 @@ function printMessage(content, sender = "Admin", type = "TEXT") {
 		<div class="message-box"><p>${content}</p></div>
 			</div>`
 			break;
-				} 		
+				} 
+  
+		}
   
   dialogElement.insertAdjacentHTML('beforeend', html)
   dialogElement.scrollTop = dialogElement.scrollHeight;
