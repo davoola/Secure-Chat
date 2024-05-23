@@ -2,7 +2,7 @@
 # Online Chat
 
 ## 简介
-这是一个在线聊天室应用。基于[chat-room](https://github.com/songquanpeng/chat-room/) 修改，添加了当前**聊天室在线人数**及**首页显示**。
+这是一个在线聊天室应用。基于[chat-room](https://github.com/songquanpeng/chat-room/) 修改，添加了当前**聊天室在线人数**、**首页显示**及**发送时间**。
 首页内容请编辑 `/views/index.ejs` 文件即可。
 
 特点如下（来自[chat-room](https://github.com/songquanpeng/chat-room/)）：

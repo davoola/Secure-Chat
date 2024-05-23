@@ -74,7 +74,7 @@ function processInput(input) {
     case "":
       break;
     case "help":
-      printMessage("https://github.com/davoola/", "Admin");
+      printMessage("https://github.com/davoola/onlinechat/", "Admin");
       break;
     case "clear":
       clearMessage();
@@ -106,25 +106,29 @@ function char2color(c) {
 function printMessage(content, sender = "Admin", type = "TEXT") {
   let html;
   let firstChar = sender[0];
+  //Add time
+  let sendTime = new Date().toLocaleString(); // 获取当前时间
+  let formattedSender = `${sender} | ${sendTime}`; // 添加发送时间
+  let formattted
   switch (type) {
     case "IMAGE":
       html = `<div class="chat-message shown">
     <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
-    <div class="nickname">${sender}</div>
+    <div class="nickname">${formattedSender}</div>
     <div class="message-box"><img src="${content}" alt="${content}"></div>
 </div>`
       break;
     case "AUDIO":
       html = `<div class="chat-message shown">
     <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
-    <div class="nickname">${sender}</div>
+    <div class="nickname">${formattedSender}</div>
     <div class="message-box"><audio controls src="${content}"></div>
 </div>`
       break;
     case "VIDEO":
       html = `<div class="chat-message shown">
     <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
-    <div class="nickname">${sender}</div>
+    <div class="nickname">${formattedSender}</div>
     <div class="message-box"><video controls><source src="${content}"></video></div>
 </div>`
       break;
@@ -133,7 +137,7 @@ function printMessage(content, sender = "Admin", type = "TEXT") {
       let text = parts[parts.length - 1];
       html = `<div class="chat-message shown">
     <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
-    <div class="nickname">${sender}</div>
+    <div class="nickname">${formattedSender}</div>
     <div class="message-box"><a href="${content}" download="${text}">${text}</a></div>
 </div>`
       break;
@@ -141,7 +145,7 @@ function printMessage(content, sender = "Admin", type = "TEXT") {
     default:
       html = `<div class="chat-message shown">
     <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
-    <div class="nickname">${sender}</div>
+    <div class="nickname">${formattedSender}</div>
     <div class="message-box"><p>${content}</p></div>
 </div>`
       break;
