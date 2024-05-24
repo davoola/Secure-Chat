@@ -7,30 +7,27 @@
     <meta name="description" content="Online Chat Room."/>
     <link rel="stylesheet" href="/style.css"/>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/main.js"></script>
-	
+    <script src="/main.js"></script>	
 </head>
 <body>
 <div class="container">
         <div id="dialog" class="dialog">
         </div>
-		<div>
-		<font color="#F5F5F5" style="font-size: 13px;">在线用户[<span id="userCount" class=".user-list">0</span>] - </font>
-		<font color="#00FF00" style="font-size: 13px;"><span id="userList" class="online-user"></span></font>
+        <div>
+			<font color="#F5F5F5" style="font-size: 13px;">在线用户[<span id="userCount" class=".user-list">0</span>] - </font>
+			<font color="#00FF00" style="font-size: 13px;"><span id="userList" class="online-user"></span></font>
         </div>
-		<div class="tool-bar">
-            <input id="fileInput" type="file" style="display: none" onchange="uploadFile()">
-            <button onclick="document.getElementById('fileInput').click()">上传文件</button>
-            <button onclick="clearMessage()">清除屏幕</button>
-            <button onclick="changeUsername()">修改昵称</button>
-            <button onclick="closeWebsite()">退出</button>
-			
+        <div class="tool-bar">
+			<input id="fileInput" type="file" style="display: none" onchange="uploadFile()">
+			<button onclick="document.getElementById('fileInput').click()">上传文件</button>
+			<button onclick="clearMessage()">清除屏幕</button>
+			<button onclick="changeUsername()">修改昵称</button>
+			<button onclick="closeWebsite()">退出</button>			
         </div>
         <div class="panel">
-            <input id="input" class="input-box" autofocus>
-            <button onclick="send()" class="send-button">发送</button>
+			<input id="input" class="input-box" autofocus>
+			<button onclick="send()" class="send-button">发送</button>
         </div>
 </div>
-
 </body>
 </html>
