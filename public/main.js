@@ -74,7 +74,7 @@ function processInput(input) {
     case "":
       break;
     case "help":
-      printMessage("help --- 帮助说明 || clear --- 清除聊天记录 change --- 修改用户名 || exit --- 退出当前聊天窗口", "Admin");
+      printMessage("help --- 帮助说明 || clear --- 清除聊天记录 || change --- 修改用户名 || exit --- 退出当前聊天窗口", "Admin");
       break;
     case "clear":
       clearMessage();
