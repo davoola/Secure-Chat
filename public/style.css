@@ -113,8 +113,61 @@ body {
   margin-left: 5px;
   color: #00FF00；
 }
+ 
+.heart {
+    position: absolute;
+	top: 20px;
+	left: 50%;
+	transform: translate(-50%, 0);
+    width: 150px;  // 增大宽度
+    height: 135px; // 增大高度
+    margin: 0 auto; // 居中
+}
+.heart:before,
+.heart:after {
+    position: absolute;
+    content: "";
+    left: 75px;  
+    top: 0;
+    width: 75px;
+    height: 120px;
+    background: red;
+    border-radius: 75px 75px 0 0;
+    transform: rotate(-45deg);
+    transform-origin: 0 100%;
+} 
+.heart:after {
+    left: 0;
+    transform: rotate(45deg);
+    transform-origin :100% 100%;
+}       
+.character-art {
+	position:relative;
+    font-size: 35px;
+	text-align: center;
+    line-height: 1.2;
+    margin: 110px auto;
+	margin-bottom: -20px;
+	color: #F0FFFF;
+}
+.hr {
+	position:relative;
+	border: 0px;
+	width: 10%;
+	border-bottom:1px solid red;
+	margin: 0 auto; // 居中2
+}
 
-
+.character-font {
+    font-size: 18px;	
+	position:relative;
+	color: #F0FFFF;
+	text-align: center;
+    font-weight: normal;
+	margin: 0 auto;
+	margin-top: 10px;
+    font-family: Consolas, "Microsoft YaHei", monospace;
+}
 
 button {
     font-family: Consolas, monospace;
