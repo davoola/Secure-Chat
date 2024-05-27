@@ -99,18 +99,20 @@ body {
     align-items: center;
 }
 
-.user-list {
+.online-user {
     margin-top: 8px;
     height: 2em;
     display: flex;
 	font-weight: normal;
+	font-size: 13px;
     align-items: center;
 	color: #F5F5F5;
 }
 
-.online-user {
+.user-list {
   display: inline;
   margin-left: 5px;
+  font-size: 13px
   color: #00FF00；
 }
  
