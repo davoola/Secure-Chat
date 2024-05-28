@@ -98,20 +98,25 @@ body {
 	font-weight: bold;
     align-items: center;
 }
-
+.show-user {
+	display: inline-block; 
+}
 .user-list {
     margin-top: 8px;
     height: 2em;
-    display: flex;
 	font-weight: normal;
+	font-size:13px;
+	vertical-align:middle;
     align-items: center;
 	color: #F5F5F5;
 }
 
 .online-user {
-  display: inline;
-  margin-left: 5px;
-  color: #00FF00；
+    margin-left: 5px;
+	vertical-align:middle;
+    color: #00FF00;
+    font-size: 15px;
+  
 }
  
 .heart {
