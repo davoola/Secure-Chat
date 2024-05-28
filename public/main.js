@@ -74,7 +74,7 @@ function processInput(input) {
     case "":
       break;
     case "help":
-      printMessage("help --- 帮助说明 || clear --- 清除聊天记录 || change --- 修改用户名 || exit --- 退出当前聊天窗口", "Admin");
+      printMessage("<ul><li><strong>help</strong> — 帮助说明</li><li><strong>clear</strong> — 清除聊天记录</li><li><strong>change</strong> — 修改用户名</li><li><strong>exit</strong> — 退出当前聊天窗口</li></ul>", "Admin");
       break;
     case "clear":
       clearMessage();
@@ -235,7 +235,7 @@ function closeWebsite() {
 
 function send() {
   let input = inputElement.value;
-  if (registered) {
+  if (registered) {	  
     processInput(input);
   } else {
     username = input;
@@ -249,10 +249,13 @@ window.onload = function () {
   inputElement = document.getElementById("input");
   fileInputElement = document.getElementById("fileInput");
   inputElement.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      send();
-    }
+	if (e.keyCode == 13 /* ENTER */ && !e.shiftKey) {
+		e.preventDefault();
+		send();
+	} else if (e.keyCode == 13 /* ENTER */ && e.shiftKey) {
+		e.preventDefault();
+		inputElement.value += "\n";
+	}
   });
   username = localStorage.getItem("username");
   if (username) {
