@@ -278,12 +278,37 @@ function showLightbox(src) {
   let lightbox = document.getElementById("lightbox");
   let lightboxImage = document.querySelector(".lightbox-image");
   let closeButton = document.querySelector(".close-button");
+  let prevButton = document.querySelector(".prev-button");
+  let nextButton = document.querySelector(".next-button");
 
-  lightboxImage.src = src;
+  let imageIndex = 0;
+  let imageArray = []; // 存储所有图片的 src
+
+  // 收集所有图片的 src
+  let imageElements = document.querySelectorAll(".image-preview");
+  imageElements.forEach((img, index) => {
+    imageArray.push(img.src);
+    if (img.src === src) {
+      imageIndex = index;
+    }
+  });
+
+  lightboxImage.src = imageArray[imageIndex];
+
   lightbox.style.display = "block";
 
   closeButton.onclick = function () {
     lightbox.style.display = "none";
+  };
+
+  prevButton.onclick = function () {
+    imageIndex = (imageIndex - 1 + imageArray.length) % imageArray.length;
+    lightboxImage.src = imageArray[imageIndex];
+  };
+
+  nextButton.onclick = function () {
+    imageIndex = (imageIndex + 1) % imageArray.length;
+    lightboxImage.src = imageArray[imageIndex];
   };
 
   window.onclick = function (event) {
@@ -291,7 +316,17 @@ function showLightbox(src) {
       lightbox.style.display = "none";
     }
   };
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "ArrowLeft") {
+      prevButton.click();
+    } else if (event.key === "ArrowRight") {
+      nextButton.click();
+    } else if (event.key === "Escape") {
+      lightbox.style.display = "none";
+    }
+  });
 }
+
 
 //图片显示
 

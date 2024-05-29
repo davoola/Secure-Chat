@@ -123,6 +123,36 @@ body {
   cursor: pointer;
   margin-top: 10px;
 }
+
+.prev-button,
+.next-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 36px;
+  font-weight: bold;
+  color: #f1f1f1;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 10px;
+  transition: 0.3s;
+}
+
+.prev-button {
+  left: 20px;
+}
+
+.next-button {
+  right: 20px;
+}
+
+.prev-button:hover,
+.next-button:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
 .progress-bar {
   height: 20px;
   background-color: #0000CD;
