@@ -71,7 +71,98 @@ body {
     max-width: 100%;
     display: block;
 }
+/* 这是一条单行注释 */
+.lightbox {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.9);
+}
 
+.lightbox-content {
+  display: block;
+  margin: auto;
+  width: 80%;
+  max-width: 700px;
+  position: relative;
+  padding-top: 20px;
+}
+
+.lightbox-image {
+  width: 100%;
+  height: auto;
+}
+
+.close-button {
+  position: absolute;
+  top: 15px;
+  right: 35px;
+  color: #f1f1f1;
+  font-size: 40px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.close-button:hover,
+.close-button:focus {
+  color: #bbb;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.image-thumbnail {
+  width: 50px;
+  height: 50px;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.progress-bar {
+  height: 20px;
+  background-color: #0000CD;
+  text-align: center;
+  line-height: 20px;
+  color: #FFFFFF;
+  position: relative;
+  width: 100%;
+  margin-left: 0;
+  transition: margin-left 0.5s ease-in-out;
+}
+
+.progress-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+}
+
+.uploading-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Consolas, "KaiTi", monospace;
+  font-weight: bold;
+  color: #FFFFFF;
+}
+
+/* 这是一条单行注释 */
 .panel {
     width: 100%;
     height: 5em;

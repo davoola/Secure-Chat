@@ -44,9 +44,32 @@ function uploadFile() {
   let file = fileInputElement.files[0];
   let formData = new FormData();
   formData.append("file", file);
+
+  let progressBar = document.createElement("div");
+  progressBar.classList.add("progress-bar");
+
+  let progressText = document.createElement("div");
+  progressText.classList.add("progress-text");
+  progressBar.appendChild(progressText);
+
+  let uploadingText = document.createElement("div");
+  uploadingText.classList.add("uploading-text");
+  uploadingText.textContent = "正在上传...";
+  progressBar.appendChild(uploadingText);
+
+  dialogElement.appendChild(progressBar);
+
   fetch("/upload", {
     method: "POST",
     body: formData,
+    onProgress: (event) => {
+      if (event.lengthComputable) {
+        let progress = Math.round((event.loaded / event.total) * 100);
+        progressBar.style.width = `${progress}%`;
+        progressText.textContent = `${progress}%`;
+        progressBar.style.backgroundSize = `${progress}% 100%`;
+      }
+    },
   })
     .then((res) => {
       return res.json();
@@ -54,6 +77,7 @@ function uploadFile() {
     .then((data) => {
       let filePath = data.path;
       sendMessage(filePath, filename2type(file.name));
+      dialogElement.removeChild(progressBar);
     });
 }
 
@@ -140,7 +164,7 @@ function printMessage(content, sender = "Admin", type = "TEXT") {
 			html = `<div class="chat-message shown">
 		<div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
 		<div class="nickname">${formattedSender}</div>
-		<div class="message-box"><img src="${content}" alt="${content}"></div>
+		<div class="message-box"><img src="${content}" alt="${content}" class="image-preview" onclick="showLightbox('${content}')"><div class="image-thumbnail" style="background-image: url('${content}')"></div></div>
 			</div>`
 			break;
 		case "AUDIO":
@@ -232,6 +256,28 @@ function closeWebsite() {
     };
   }
 }
+//图片显示
+function showLightbox(src) {
+  let lightbox = document.getElementById("lightbox");
+  let lightboxImage = document.querySelector(".lightbox-image");
+  let closeButton = document.querySelector(".close-button");
+
+  lightboxImage.src = src;
+  lightbox.style.display = "block";
+
+  closeButton.onclick = function () {
+    lightbox.style.display = "none";
+  };
+
+  window.onclick = function (event) {
+    if (event.target == lightbox) {
+      lightbox.style.display = "none";
+    }
+  };
+}
+
+//图片显示
+
 
 function send() {
   let input = inputElement.value;
