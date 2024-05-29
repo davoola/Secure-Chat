@@ -54,10 +54,25 @@ function uploadFile() {
 
   let uploadingText = document.createElement("div");
   uploadingText.classList.add("uploading-text");
-  uploadingText.textContent = "正在上传...";
+  uploadingText.textContent = "正在上传";
   progressBar.appendChild(uploadingText);
 
+  let progressPercentage = document.createElement("div");
+  progressPercentage.classList.add("progress-percentage");
+  progressBar.appendChild(progressPercentage);
+
   dialogElement.appendChild(progressBar);
+
+  let currentProgress = 0;
+  const progressInterval = setInterval(() => {
+    if (currentProgress < 100) {
+      currentProgress++;
+      progressPercentage.textContent = `${currentProgress}%`;
+      progressBar.style.width = `${currentProgress}%`;
+    } else {
+      clearInterval(progressInterval);
+    }
+  }, 50);
 
   fetch("/upload", {
     method: "POST",
@@ -65,9 +80,11 @@ function uploadFile() {
     onProgress: (event) => {
       if (event.lengthComputable) {
         let progress = Math.round((event.loaded / event.total) * 100);
-        progressBar.style.width = `${progress}%`;
-        progressText.textContent = `${progress}%`;
-        progressBar.style.backgroundSize = `${progress}% 100%`;
+        if (progress > currentProgress) {
+          currentProgress = progress;
+          progressPercentage.textContent = `${currentProgress}%`;
+          progressBar.style.width = `${currentProgress}%`;
+        }
       }
     },
   })

@@ -123,7 +123,6 @@ body {
   cursor: pointer;
   margin-top: 10px;
 }
-
 .progress-bar {
   height: 20px;
   background-color: #0000CD;
@@ -158,8 +157,23 @@ body {
   justify-content: center;
   align-items: center;
   font-family: Consolas, "KaiTi", monospace;
-  font-weight: bold;
+  font-weight: normal;
   color: #FFFFFF;
+  margin-right: 80px;
+}
+
+.progress-percentage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: normal;
+  font-family: Consolas, "KaiTi", monospace;
+  margin-left: 80px;
 }
 
 /* 这是一条单行注释 */
