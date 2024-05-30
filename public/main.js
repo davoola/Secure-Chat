@@ -181,7 +181,7 @@ function printMessage(content, sender = "Admin", type = "TEXT") {
 			html = `<div class="chat-message shown">
 		<div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
 		<div class="nickname">${formattedSender}</div>
-		<div class="message-box"><img src="${content}" alt="${content}" class="image-preview" onclick="showLightbox('${content}')"><div class="image-thumbnail" style="background-image: url('${content}')"></div></div>
+		<div class="message-box"><img src="${content}" alt="${content}" class="image-preview" data-src="${content}" onclick="showLightbox('${content}')"><div class="image-thumbnail" style="background-image: url('${content}')"></div></div>
 			</div>`
 			break;
 		case "AUDIO":
@@ -287,8 +287,8 @@ function showLightbox(src) {
   // 收集所有图片的 src
   let imageElements = document.querySelectorAll(".image-preview");
   imageElements.forEach((img, index) => {
-    imageArray.push(img.src);
-    if (img.src === src) {
+    imageArray.push(img.getAttribute("data-src"));
+    if (img.getAttribute("data-src") === src) {
       imageIndex = index;
     }
   });
@@ -316,12 +316,12 @@ function showLightbox(src) {
       lightbox.style.display = "none";
     }
   };
-  document.addEventListener("keydown", function (event) {
-    if (event.key === "ArrowLeft") {
+  document.addEventListener("keydown", function (e) {
+    if (e.keyCode === 37 /* ArrowLeft */) {
       prevButton.click();
-    } else if (event.key === "ArrowRight") {
+    } else if (e.keyCode === 39 /* ArrowRight */) {
       nextButton.click();
-    } else if (event.key === "Escape") {
+    } else if (e.keyCode === 27 /* Escape */) {
       lightbox.style.display = "none";
     }
   });
