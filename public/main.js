@@ -253,10 +253,33 @@ function initSocket() {
   });
 }
 
+/* //原始文件，用户昵称颜色同色，同时css文件中需要给出颜色
 function updateUserList(users) {
   let userListElement = document.getElementById("userList");
   let usernames = users.map(user => user.username);
   userListElement.textContent = usernames.join("、");
+  let userCountElement = document.getElementById("userCount");
+  userCountElement.textContent = users.length;
+}
+*/
+// 以下代码实现用户颜色从列表中依次显示
+
+function updateUserList(users) {
+  let userListElement = document.getElementById("userList");
+  userListElement.innerHTML = "";
+
+  const colors = ["#ff0000", "#00ff00", "#ff00ff", "#d8bfd8", "#00ffff", "#0000ff"];
+  const userColorMap = new Map();
+
+  users.forEach((user, index) => {
+    let randomColor = colors[index % colors.length];
+    userColorMap.set(user.username, randomColor);
+    const userSpan = document.createElement("span");
+    userSpan.textContent = user.username;
+    userSpan.style.color = randomColor;
+    userListElement.appendChild(userSpan);
+  });
+
   let userCountElement = document.getElementById("userCount");
   userCountElement.textContent = users.length;
 }

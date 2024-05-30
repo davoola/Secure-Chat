@@ -248,10 +248,12 @@ body {
 
 .online-user {
     margin-left: 5px;
-	vertical-align:middle;
-    color: #00FF00;
-    font-size: 15px;
-  
+	vertical-align:middle;    
+    font-size: 15px;  
+}
+
+.online-user span {
+    margin-right: 13px;
 }
  
 .heart {
