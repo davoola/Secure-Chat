@@ -99,13 +99,17 @@ function uploadFile() {
 }
 
 function changeUsername() {
-  printMessage("请输入新的用户昵称！");
-  registered = false;
+  username = prompt("请输入新的用户昵称：", "");
+  if (username !== null && username !== "") {
+    registered = false;
+    register();
+  }
 }
 
 function register() {
   if (username !== "") {
-    socket.emit("register", username, roomID);
+    let password = prompt("请输入房间密码(如果有):");
+    socket.emit("register", username, roomID, password);
   }
 }
 
@@ -244,10 +248,14 @@ function initSocket() {
   socket.on("conflict username", function () {
     registered = false;
     localStorage.setItem("username", "");
-    printMessage(
-      "用户昵称已被占用，请输入新的用户昵称！"
-    );
-  });  
+    alert("用户昵称已被占用，请输入新的用户昵称！");
+    changeUsername();
+  });
+  socket.on("invalid password", function () {
+    registered = false;
+    alert("密码错误,请重新输入!");
+    register();
+  });
   socket.on("update users", function (users) {
     updateUserList(users);
   });
@@ -349,18 +357,14 @@ function showLightbox(src) {
     }
   });
 }
-
-
 //图片显示
-
 
 function send() {
   let input = inputElement.value;
-  if (registered) {	  
+  if (registered) {
     processInput(input);
   } else {
-    username = input;
-    register();
+    alert("请先输入用户昵称和房间密码(如果有)进行注册！");
   }
 }
 
@@ -382,7 +386,7 @@ window.onload = function () {
   if (username) {
     register();
   } else {
-    printMessage("请输入您的用户昵称！");
+    changeUsername();
   }
   //user
   updateOnlineUsers();
