@@ -103,6 +103,7 @@ io.sockets.on("connection", function (socket) {
                 sender: "Admin",
                 type: "TEXT",
               };
+			  io.to(roomID).emit("update users", Array.from(room.users.values()));
               break;
             }
           }
