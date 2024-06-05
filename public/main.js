@@ -106,13 +106,6 @@ function changeUsername() {
   }
 }
 
-function register() {
-  if (username !== "") {
-    let password = prompt("请输入房间密码(如果有):");
-    socket.emit("register", username, roomID, password);
-  }
-}
-
 function processInput(input) {
   input = input.trim();
   switch (input) {
@@ -235,6 +228,12 @@ function sendMessage(content, type = "TEXT") {
   socket.emit("message", data, roomID);
 }
 
+function register() {
+  if (username !== "") {
+    socket.emit("register", username, roomID, null);
+  }
+}
+
 function initSocket() {
   socket = io();
   socket.on("message", function (message) {
@@ -248,13 +247,17 @@ function initSocket() {
   socket.on("conflict username", function () {
     registered = false;
     localStorage.setItem("username", "");
-    alert("用户昵称已被占用，请输入新的用户昵称！");
+    alert("用户昵称已被占用,请输入新的用户昵称！");
     changeUsername();
+  });
+  socket.on("set password", function () {
+    let password = prompt("请设置房间密码(可以为空):");
+    socket.emit("register", username, roomID, password);
   });
   socket.on("invalid password", function () {
     registered = false;
-    alert("密码错误,请重新输入!");
-    register();
+    let password = prompt("请输入房间密码:");
+    socket.emit("register", username, roomID, password);
   });
   socket.on("update users", function (users) {
     updateUserList(users);

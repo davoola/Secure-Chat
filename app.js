@@ -44,43 +44,48 @@ function getRoom(roomID) {
 
 io.sockets.on("connection", function (socket) {
   socket.on("register", function (username, roomID = "/", password = "") {
-	let room = getRoom(roomID);
-	username = username.trim();
+    let room = getRoom(roomID);
+    username = username.trim();
 
-	let isFirstPerson = room.users.size === 0;
+    let isFirstPerson = room.users.size === 0;
 
-	// 如果是第一个用户进入房间,设置房间密码
-	if (isFirstPerson) {
-		room.password = password;
-	}
+    // 如果是第一个用户进入房间,设置房间密码
+    if (isFirstPerson) {
+      if (password === null) {
+        socket.emit("set password");
+        return;
+      } else {
+        room.password = password;
+      }
+    }
 
-	// 如果房间有密码,检查用户输入的密码是否正确
-	if (room.password !== null && room.password !== password) {
-		socket.emit("invalid password");
-		return; // 如果密码不正确,直接返回,不继续执行后面的代码
-	}
+    // 如果房间有密码,检查用户输入的密码是否正确
+    if (room.password !== "" && room.password !== password) {
+      socket.emit("invalid password");
+      return; // 如果密码不正确,直接返回,不继续执行后面的代码
+    }
 
-	if (room.usernameSet.has(username) || username === "Admin") {
-		socket.emit("conflict username");
-	} else {
-		room.usernameSet.add(username);
-		room.users.set(socket.id, {
-			username,
-			isAdmin: isFirstPerson
-		});
-		userID2roomID.set(socket.id, roomID);
-		socket.join(roomID);
-		socket.emit("register success");
+    if (room.usernameSet.has(username) || username === "Admin") {
+      socket.emit("conflict username");
+    } else {
+      room.usernameSet.add(username);
+      room.users.set(socket.id, {
+        username,
+        isAdmin: isFirstPerson
+      });
+      userID2roomID.set(socket.id, roomID);
+      socket.join(roomID);
+      socket.emit("register success");
 
-		let data = {
-			content: `${username} 加入聊天！`,
-			sender: "Admin",
-			type: "TEXT"
-			};
-		io.to(roomID).emit("message", data);
-		io.to(roomID).emit("update users", Array.from(room.users.values()));
-		}
-	});
+      let data = {
+        content: `${username} 加入聊天！`,
+        sender: "Admin",
+        type: "TEXT"
+      };
+      io.to(roomID).emit("message", data);
+      io.to(roomID).emit("update users", Array.from(room.users.values()));
+    }
+  });
 
   socket.on("message", function (data, roomID = "/") {  	
 	let room = getRoom(roomID);
