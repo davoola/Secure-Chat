@@ -12,13 +12,12 @@
 - **聊天窗口自动嵌入分享的YouTube链接**
 
 
-特点如下（来自[chat-room](https://github.com/songquanpeng/chat-room/)）：
+##特点如下（来自[chat-room](https://github.com/songquanpeng/chat-room/)）：
 1. 支持发送图片消息，音频消息，视频消息以及文件消息。
-2. 支持聊天窗口自动嵌入分享的YouTube链接。
-3. 支持多房间，每个链接都是一个独立的聊天室，例如： https://onlinechat-0iyv.onrender.com/roomID
-4. 支持管理员踢人，输入 `kick username` 即可。
-5. 第一个进入房间的自动成为管理员。
-6. 页面为移动端做了专门优化。
+2. 支持多房间，每个链接都是一个独立的聊天室，例如： https://onlinechat-0iyv.onrender.com/roomID
+3. 支持管理员踢人，输入 `kick username` 即可。
+4. 第一个进入房间的自动成为管理员。
+5. 页面为移动端做了专门优化。
 
 ## 演示
 
@@ -30,7 +29,7 @@
 首次访问需要稍等几秒，这是由于应用冻结了，之后就会好很多。
 
 截图展示：
-![ss](https://github.com/davoola/onlinechat/assets/5195440/11f259ae-b0bc-4f4b-b6d5-e5fa8d90fb07)
+!![截图演示](https://github.com/davoola/onlinechat/assets/5195440/ad25ff93-43c4-4205-84ee-329e96cb7908)
 
 
 ## 部署
