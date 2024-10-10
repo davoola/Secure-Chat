@@ -1,7 +1,7 @@
 let socket;
 let username = "";
 let registered = false;
-let roomID = window.location.pathname;
+let roomID = window.location.search;
 let dialogElement;
 let inputElement;
 let fileInputElement;
@@ -262,7 +262,12 @@ function initSocket() {
   socket.on("update users", function (users) {
     updateUserList(users);
   });
+  socket.on("invalid room", function () {
+    alert("无效的聊天室ID，将返回首页。");
+    window.location.href = "/";
+  });
 }
+
 
 /* //原始文件，用户昵称颜色同色，同时css文件中需要给出颜色
 function updateUserList(users) {
@@ -377,21 +382,20 @@ window.onload = function () {
   inputElement = document.getElementById("input");
   fileInputElement = document.getElementById("fileInput");
   inputElement.addEventListener("keydown", function (e) {
-	if (e.keyCode == 13 /* ENTER */ && !e.shiftKey) {
-		e.preventDefault();
-		send();
-	} else if (e.keyCode == 13 /* ENTER */ && e.shiftKey) {
-		e.preventDefault();
-		inputElement.value += "\n";
-	}
+    if (e.keyCode == 13 /* ENTER */ && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    } else if (e.keyCode == 13 /* ENTER */ && e.shiftKey) {
+      e.preventDefault();
+      inputElement.value += "\n";
+    }
   });
   username = localStorage.getItem("username");
+  roomID = window.location.search; // Change this line to use search instead of pathname
   if (username) {
     register();
   } else {
     changeUsername();
   }
-  //user
   updateOnlineUsers();
-  
 };

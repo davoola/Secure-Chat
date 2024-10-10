@@ -17,10 +17,15 @@ app.use("/upload", uploadRouter);
 
 
 app.get("/", (req, res) => {
-  res.render("index", {title: "OnlineChat"});
+  if (req.query && Object.keys(req.query).length > 0) {
+    res.render("chat");
+  } else {
+    res.render("index", {title: "OnlineChat"});
+  }
 });
 
 app.use("/", roomRouter);
+
 app.use(function (req, res) {
   res.status(404);
   res.send({error: "Not found"});
@@ -35,7 +40,7 @@ function getRoom(roomID) {
     room = {
       users: new Map(),
       usernameSet: new Set(),
-	  password: null // 添加密码属性
+      password: null
     };
     rooms.set(roomID, room);
   }
@@ -44,12 +49,16 @@ function getRoom(roomID) {
 
 io.sockets.on("connection", function (socket) {
   socket.on("register", function (username, roomID = "/", password = "") {
+    if (!roomID.startsWith("?")) {
+      socket.emit("invalid room");
+      return;
+    }
+
     let room = getRoom(roomID);
     username = username.trim();
 
     let isFirstPerson = room.users.size === 0;
 
-    // 如果是第一个用户进入房间,设置房间密码
     if (isFirstPerson) {
       if (password === null) {
         socket.emit("set password");
@@ -59,10 +68,9 @@ io.sockets.on("connection", function (socket) {
       }
     }
 
-    // 如果房间有密码,检查用户输入的密码是否正确
     if (room.password !== "" && room.password !== password) {
       socket.emit("invalid password");
-      return; // 如果密码不正确,直接返回,不继续执行后面的代码
+      return;
     }
 
     if (room.usernameSet.has(username) || username === "Admin") {
@@ -158,4 +166,4 @@ io.sockets.on("connection", function (socket) {
   });
 });
 
-server.listen(process.env.PORT || 3000);  //内部端口3000
+server.listen(process.env.PORT || 3000);  
