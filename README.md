@@ -24,7 +24,7 @@
 演示站： 
 - 首页 - https://onlinechat-0iyv.onrender.com/
 - 聊天页面 - https://onlinechat-0iyv.onrender.com/roomID
-> roomID 可以是任意字符串，但不能以"?"开头，如果以'?"开头会打开首页。
+> roomID 可以是任意字符串，但必须以"?"开头，否则会返回首页。
 
 首次访问需要稍等几秒，这是由于应用冻结了，之后就会好很多。
 
