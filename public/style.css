@@ -95,13 +95,14 @@ body {
 
 .index-container h1 {
     text-align: center;
-    color: #333;
+    color: #FF7F50;
     margin-bottom: 1rem;
+	font-size: 3rem;
 }
 
 .index-container p {
     text-align: center;
-    color: #666;
+    color: #808080;
     margin-bottom: 2rem;
 }
 
@@ -112,7 +113,7 @@ body {
 .index-container label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #333;
+    color: #778899;
 }
 
 .index-container input {
@@ -120,6 +121,7 @@ body {
     padding: 0.5rem;
     border: 1px solid #ddd;
     border-radius: 4px;
+	color: #FF4500;
     font-size: 1rem;
 }
 
@@ -141,6 +143,7 @@ body {
 
 .index-features {
     display: flex;
+	color: #8A2BE2;
     justify-content: space-around;
     margin-top: 2rem;
 }
