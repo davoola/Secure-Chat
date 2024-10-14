@@ -15,12 +15,12 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.use("/upload", uploadRouter);
 
-
 app.get("/", (req, res) => {
   if (req.query && Object.keys(req.query).length > 0) {
-    res.render("chat");
+    const roomID = Object.keys(req.query)[0];
+    res.render("chat", { roomID });
   } else {
-    res.render("index", {title: "OnlineChat"});
+    res.render("index", {title: "Secure Chat"});
   }
 });
 
@@ -60,12 +60,7 @@ io.sockets.on("connection", function (socket) {
     let isFirstPerson = room.users.size === 0;
 
     if (isFirstPerson) {
-      if (password === null) {
-        socket.emit("set password");
-        return;
-      } else {
-        room.password = password;
-      }
+      room.password = password;
     }
 
     if (room.password !== "" && room.password !== password) {

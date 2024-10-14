@@ -3,25 +3,59 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>OnlineChat</title>
-    <meta name="description" content="Online Chat Room."/>
+    <title>Secure Chat App</title>
+    <meta name="description" content="Secure Chat Application"/>
     <link rel="stylesheet" href="/style.css"/>
 </head>
-<body>
-    <div class="container">
-        <div class="heart"></div> 			
-        <div class="character-art">
-            <p>┏┓</p>
-            <p>┃┃╱╲</p>
-            <p>┃╱╱╲╲</p>
-            <p>┃┗━━┳┛</p>
-            <p>┃┏━┓┃</p>
-            <p>┃┃╱┃┃</p>
-            <p>┗┛╲┗┛</p>
-            <p>┗━━┛</p>
+<body class="index-body">
+    <div class="index-container">
+        <h1>Secure Chat App</h1>
+        <p>Connect with friends and colleagues through secure chats and text messaging.</p>
+        <form onsubmit="return false;">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username" required>
+            </div>
+            <div class="form-group">
+                <label for="roomId">Room ID</label>
+                <input type="text" id="roomId" placeholder="Enter room ID" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password (optional)</label>
+                <input type="password" id="password" placeholder="Enter room password">
+            </div>
+            <button onclick="joinChat()" class="index-button">Join Room</button>
+        </form>
+        <div class="index-features">
+            <div class="index-feature">
+                <div class="index-feature-icon">📹</div>
+                <div>Video Chat</div>
+            </div>
+            <div class="index-feature">
+                <div class="index-feature-icon">💬</div>
+                <div>Text Chat</div>
+            </div>
+            <div class="index-feature">
+                <div class="index-feature-icon">🔒</div>
+                <div>Secure Rooms</div>
+            </div>
         </div>
-		<div class="hr"></div>
-        <div class="character-font" >心连心 ~ 畅享沟通</div>
     </div>
+    <script>
+        function joinChat() {
+            const username = document.getElementById('username').value;
+            const roomId = document.getElementById('roomId').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !roomId) {
+                alert('请先输入用户昵称和房间号进行注册！');
+                return;
+            }
+            
+            localStorage.setItem('username', username);
+            localStorage.setItem('password', password);
+            window.location.href = `/?${roomId}`;
+        }
+    </script>
 </body>
 </html>

@@ -1,11 +1,10 @@
 
-# Online Chat
+# Secure-Chat
 
 ## 简介
 这是一个在线聊天室应用。基于[chat-room](https://github.com/songquanpeng/chat-room/) 修改。
 ### 新增内容
 - **聊天室在线人数** (在输入框上面显示当前房间在线用户及用户列表)
-- **首页显示** (首页内容请编辑 `/views/index.ejs` 文件即可)
 - **发送时间** 
 - **聊天室密码功能** (第一个创建房间的用户可以设置密码，其他用户必须正确输入密码才能进入该房间)
 - **图片lightbox特效**
@@ -55,8 +54,8 @@ services:
 
 ### 通过源码部署
 ```shell script
-git clone https://github.com/davoola/onlinechat.git
-cd onlinechat
+git clone https://github.com/davoola/Secure-Chat.git
+cd Secure-Chat
 # 安装依赖
 npm install
 # 启动服务
@@ -65,7 +64,7 @@ npm start
 # 1. 安装 pm2
 npm i -g pm2
 # 2. 使用 pm2 启动服务
-pm2 start ./app.js --name chat-room
+pm2 start ./server.js --name Secure-Chat
 ```
 
 ## 其他

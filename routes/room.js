@@ -5,7 +5,7 @@ router.get("*", (req, res) => {
   if (req.path !== "/") {
     res.redirect("/");
   } else {
-    res.render("index", {title: "OnlineChat"});
+    res.render("index", {title: "Secure Chat"});
   }
 });
 

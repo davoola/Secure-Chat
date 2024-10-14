@@ -230,7 +230,8 @@ function sendMessage(content, type = "TEXT") {
 
 function register() {
   if (username !== "") {
-    socket.emit("register", username, roomID, null);
+    let password = localStorage.getItem("password") || "";
+    socket.emit("register", username, roomID, password);
   }
 }
 
@@ -241,23 +242,22 @@ function initSocket() {
   });
   socket.on("register success", function () {
     registered = true;
-    localStorage.setItem("username", username);
     clearInputBox();
   });
   socket.on("conflict username", function () {
     registered = false;
-    localStorage.setItem("username", "");
-    alert("用户昵称已被占用,请输入新的用户昵称！");
-    changeUsername();
+    localStorage.removeItem("username");
+    alert("用户昵称已被占用,请返回首页重新输入用户昵称！");
+    window.location.href = "/";
   });
   socket.on("set password", function () {
-    let password = prompt("请设置房间密码(可以为空):");
+    let password = localStorage.getItem("password") || "";
     socket.emit("register", username, roomID, password);
   });
   socket.on("invalid password", function () {
     registered = false;
-    let password = prompt("请输入房间密码:");
-    socket.emit("register", username, roomID, password);
+    alert("密码错误，请返回首页重新输入！");
+    window.location.href = "/";
   });
   socket.on("update users", function (users) {
     updateUserList(users);
@@ -391,11 +391,11 @@ window.onload = function () {
     }
   });
   username = localStorage.getItem("username");
-  roomID = window.location.search; // Change this line to use search instead of pathname
+  roomID = window.location.search;
   if (username) {
     register();
   } else {
-    changeUsername();
+    window.location.href = "/";
   }
   updateOnlineUsers();
 };
