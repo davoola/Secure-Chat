@@ -13,7 +13,7 @@
 
 ### 特点如下（来自[chat-room](https://github.com/songquanpeng/chat-room/)）：
 1. 支持发送图片消息，音频消息，视频消息以及文件消息。
-2. 支持多房间，每个链接都是一个独立的聊天室，例如： https://onlinechat-0iyv.onrender.com/roomID
+2. 支持多房间，每个链接都是一个独立的聊天室，例如： https://onlinechat-0iyv.onrender.com/?roomID
 3. 支持管理员踢人，输入 `kick username` 即可。
 4. 第一个进入房间的自动成为管理员。
 5. 页面为移动端做了专门优化。
