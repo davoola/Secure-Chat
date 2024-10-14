@@ -22,23 +22,22 @@
 
 演示站： 
 - 首页 - https://onlinechat-0iyv.onrender.com/
-- 聊天页面 - https://onlinechat-0iyv.onrender.com/roomID
-> roomID 可以是任意字符串，但必须以"?"开头，否则会返回首页。
+- 第一个用户输入用户名，房房号及密码(可选)即可进入聊天室。
+- 其他用户输入对应的房间号及密码（可选）即可进入对应的聊天室。
 
 首次访问需要稍等几秒，这是由于应用冻结了，之后就会好很多。
 
-截图展示:
-![首页展示](https://github.com/user-attachments/assets/59306c0e-51e2-4db0-93e8-06c62acd84bb)
-
-
 截图展示：
-![聊天面展示](https://github.com/davoola/onlinechat/assets/5195440/ad25ff93-43c4-4205-84ee-329e96cb7908)
+- 首页
+![首页展示](https://github.com/user-attachments/assets/59306c0e-51e2-4db0-93e8-06c62acd84bb)
+- 聊天室
+![截图演示](https://github.com/davoola/onlinechat/assets/5195440/ad25ff93-43c4-4205-84ee-329e96cb7908)
 
 
 ## 部署
 
 ### 通过 Docker 部署
-执行：`docker run --restart=always -d -p 3000:3000 davoola/onlinechat:latest`
+执行：`docker run --restart=always -d -p 3000:3000 davoola/secure-chat:latest`
 
 开放的端口号为 3000，之后用 Nginx 配置域名，反代以及 SSL 证书即可。
 
@@ -53,7 +52,7 @@ services:
         restart: always
         ports:
             - 3000:3000
-        image: davoola/onlinechat:latest
+        image: davoola/secure-chat:latest
 ```
 
 ### 通过源码部署
