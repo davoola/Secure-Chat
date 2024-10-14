@@ -27,8 +27,12 @@
 
 首次访问需要稍等几秒，这是由于应用冻结了，之后就会好很多。
 
+截图展示:
+![首页展示](https://github.com/user-attachments/assets/59306c0e-51e2-4db0-93e8-06c62acd84bb)
+
+
 截图展示：
-![截图演示](https://github.com/davoola/onlinechat/assets/5195440/ad25ff93-43c4-4205-84ee-329e96cb7908)
+![聊天面展示](https://github.com/davoola/onlinechat/assets/5195440/ad25ff93-43c4-4205-84ee-329e96cb7908)
 
 
 ## 部署
