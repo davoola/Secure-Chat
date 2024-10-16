@@ -106,6 +106,13 @@ function changeUsername() {
   }
 }
 
+function register() {
+  if (username !== "") {
+    let password = localStorage.getItem("password") || "";
+    socket.emit("register", username, roomID, password);
+  }
+}
+
 function processInput(input) {
   input = input.trim();
   switch (input) {
@@ -228,13 +235,6 @@ function sendMessage(content, type = "TEXT") {
   socket.emit("message", data, roomID);
 }
 
-function register() {
-  if (username !== "") {
-    let password = localStorage.getItem("password") || "";
-    socket.emit("register", username, roomID, password);
-  }
-}
-
 function initSocket() {
   socket = io();
   socket.on("message", function (message) {
@@ -268,17 +268,18 @@ function initSocket() {
   });
 }
 
-
-/* //原始文件，用户昵称颜色同色，同时css文件中需要给出颜色
-function updateUserList(users) {
-  let userListElement = document.getElementById("userList");
-  let usernames = users.map(user => user.username);
-  userListElement.textContent = usernames.join("、");
-  let userCountElement = document.getElementById("userCount");
-  userCountElement.textContent = users.length;
+function closeWebsite() {
+  if (confirm('确定要退出吗？')) {
+    if (navigator.userAgent.indexOf("Firefox") != -1 || navigator.userAgent.indexOf("Chrome") != -1) {
+      window.location.href = "about:blank";
+      window.close();
+    } else {
+      window.opener = null;
+      window.open("", "_self");
+      window.close();
+    };
+  }
 }
-*/
-// 以下代码实现用户颜色从列表中依次显示
 
 function updateUserList(users) {
   let userListElement = document.getElementById("userList");
@@ -300,18 +301,6 @@ function updateUserList(users) {
   userCountElement.textContent = users.length;
 }
 
-function closeWebsite() {
-  if (confirm('确定要退出吗？')) {
-    if (navigator.userAgent.indexOf("Firefox") != -1 || navigator.userAgent.indexOf("Chrome") != -1) {
-      window.location.href = "about:blank";
-      window.close();
-    } else {
-      window.opener = null;
-      window.open("", "_self");
-      window.close();
-    };
-  }
-}
 //图片显示
 function showLightbox(src) {
   let lightbox = document.getElementById("lightbox");
@@ -373,6 +362,7 @@ function send() {
     processInput(input);
   } else {
     alert("请先输入用户昵称和房间密码(如果有)进行注册！");
+    window.location.href = "/";
   }
 }
 
@@ -397,5 +387,4 @@ window.onload = function () {
   } else {
     window.location.href = "/";
   }
-  updateOnlineUsers();
 };

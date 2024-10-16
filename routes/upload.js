@@ -12,7 +12,7 @@ const upload = multer({
     },
     filename: function (req, file, callback) {
       let extension = file.originalname.split(".").pop();
-      callback(null, file.originalname);
+      callback(null, `${Buffer.from(file.originalname,'binary').toString()}`);
     },
   }),
 });
@@ -25,5 +25,3 @@ router.post("/", upload.single("file"), (req, res, next) => {
 });
 
 module.exports = router;
-
-
