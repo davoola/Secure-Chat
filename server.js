@@ -139,6 +139,47 @@ io.sockets.on("connection", function (socket) {
       socket.emit("chat history", chatHistory);
     }
   });
+  
+  
+
+  socket.on("change username", function (newUsername, roomID = "/") {
+    let room = getRoom(roomID);
+    let oldUsername = room.users.get(socket.id).username;
+	
+	// Special handling for MyLove room
+	if (roomID === "MyLove") {
+		if (newUsername !== "Jack" && newUsername !== "Amy") {
+		socket.emit("username change failed", "玉堂深处,惟迎知音……");
+		return;
+		}
+	}
+	
+    // Check if the new username is already in use in the current room
+    if (room.usernameSet.has(newUsername) && newUsername !== oldUsername) {
+      socket.emit("username change failed", "用户昵称已被占用");
+      return;
+    }
+
+    // Remove old username and add new username to the set
+    room.usernameSet.delete(oldUsername);
+    room.usernameSet.add(newUsername);
+
+    // Update the username in the room's users map
+    room.users.get(socket.id).username = newUsername;
+
+    // Notify the client that the username change was successful
+    socket.emit("username change success", newUsername);
+
+    // Notify all users in the room about the username change
+    let data = {
+      content: `${oldUsername} 已更改昵称为 ${newUsername}`,
+      sender: "Admin",
+      type: "TEXT",
+      timestamp: new Date().toISOString()
+    };
+    io.to(roomID).emit("message", data);
+    io.to(roomID).emit("update users", Array.from(room.users.values()));
+  });
 
   socket.on("message", function (data, roomID = "/") {  	
     let room = getRoom(roomID);

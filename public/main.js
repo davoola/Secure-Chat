@@ -99,10 +99,9 @@ function uploadFile() {
 }
 
 function changeUsername() {
-  username = prompt("请输入新的用户昵称：", "");
-  if (username !== null && username !== "") {
-    registered = false;
-    register();
+  let newUsername = prompt("请输入新的用户昵称：", "");
+  if (newUsername !== null && newUsername !== "") {
+    socket.emit("change username", newUsername, roomID);
   }
 }
 
@@ -237,6 +236,16 @@ function initSocket() {
   socket.on("register success", function () {
     registered = true;
     clearInputBox();
+  });
+  
+  socket.on("username change success", function (newUsername) {
+    username = newUsername;
+    localStorage.setItem("username", newUsername);
+    alert("昵称更改成功！");
+  });
+
+  socket.on("username change failed", function (reason) {
+    alert("昵称更改失败：" + reason);
   });
   socket.on("conflict username", function () {
     registered = false;
