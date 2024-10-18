@@ -5,6 +5,7 @@ const serveStatic = require("serve-static");
 const uploadRouter = require("./routes/upload");
 const roomRouter = require("./routes/room");
 const {md2html} = require("./utils");
+const fs = require('fs');
 const app = express();
 const server = require("http").createServer(app);
 let io = require("socket.io")(server);
@@ -40,97 +41,130 @@ function getRoom(roomID) {
     room = {
       users: new Map(),
       usernameSet: new Set(),
-      password: null
+      password: getSpecialRoomPassword(roomID)
     };
     rooms.set(roomID, room);
   }
   return room;
 }
 
+function getSpecialRoomPassword(roomID) {
+  switch(roomID) { // Special roomID && Password
+    case "MyLove": return "5201314"; 
+    case "Tech": return "abc";
+    case "Sci": return "xyz";
+    default: return null;
+  }
+}
+
+function loadChatHistory(roomID) {
+  if (!isSpecialRoom(roomID)) return [];
+  
+  const filePath = path.join(__dirname, 'public/upload', `_records-${roomID}.json`);
+  try {
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, JSON.stringify([]));
+    }
+    const data = fs.readFileSync(filePath, 'utf8');
+    return JSON.parse(data || '[]');
+  } catch (err) {
+    console.error('Error reading chat history:', err);
+    return [];
+  }
+}
+
+function saveChatHistory(roomID, message) {
+  if (!isSpecialRoom(roomID)) return;
+  
+  const filePath = path.join(__dirname, 'public/upload', `_records-${roomID}.json`);
+  try {
+    let records = [];
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf8');
+      records = JSON.parse(data || '[]');
+    }
+    records.push(message);
+    fs.writeFileSync(filePath, JSON.stringify(records, null, 2));
+  } catch (err) {
+    console.error('Error saving chat history:', err);
+  }
+}
+
+function isSpecialRoom(roomID) {
+  return ["MyLove", "Tech", "Sci"].includes(roomID); // Special roomID
+}
+
 io.sockets.on("connection", function (socket) {
   socket.on("register", function (username, roomID = "/", password = "") {
-    if (!roomID.startsWith("?")) {
-      socket.emit("invalid room");
-      return;
-    }
-
     let room = getRoom(roomID);
-    username = username.trim();
 
-    let isFirstPerson = room.users.size === 0;
-
-    if (isFirstPerson) {
-      room.password = password;
-    }
-
-    if (room.password !== "" && room.password !== password) {
-      socket.emit("invalid password");
+    if (room.usernameSet.has(username)) {
+      socket.emit("conflict username");
       return;
     }
 
-    if (room.usernameSet.has(username) || username === "Admin") {
-      socket.emit("conflict username");
-    } else {
-      room.usernameSet.add(username);
-      room.users.set(socket.id, {
-        username,
-        isAdmin: isFirstPerson
-      });
-      userID2roomID.set(socket.id, roomID);
-      socket.join(roomID);
-      socket.emit("register success");
+    if (isSpecialRoom(roomID)) {
+      if (roomID === "MyLove") {
+        if (username !== "Jack" && username !== "Amy") { // Special UserName
+          socket.emit("unauthorized user");
+          return;
+        }
+      }
+      if (password !== room.password) {
+        socket.emit("invalid password");
+        return;
+      }
+    }
 
-      let data = {
-        content: `${username} 加入聊天！`,
-        sender: "Admin",
-        type: "TEXT"
-      };
-      io.to(roomID).emit("message", data);
-      io.to(roomID).emit("update users", Array.from(room.users.values()));
+    room.users.set(socket.id, {
+      username,
+      isAdmin: room.users.size === 0
+    });
+    room.usernameSet.add(username);
+    userID2roomID.set(socket.id, roomID);
+    socket.join(roomID);
+    socket.emit("register success");
+
+    let data = {
+      content: `${username} 加入聊天！`,
+      sender: "Admin",
+      type: "TEXT",
+      timestamp: new Date().toISOString()
+    };
+    io.to(roomID).emit("message", data);
+    io.to(roomID).emit("update users", Array.from(room.users.values()));
+
+    if (isSpecialRoom(roomID)) {
+      const chatHistory = loadChatHistory(roomID);
+      socket.emit("chat history", chatHistory);
     }
   });
 
   socket.on("message", function (data, roomID = "/") {  	
-	let room = getRoom(roomID);
+    let room = getRoom(roomID);
     if (room.users.has(socket.id)) {
       if (!data) return;
       if (data.content === undefined) return;
       if (data.type === undefined) data.type = "TEXT";
       let user = room.users.get(socket.id);
-      let kickMessage = undefined;
-      if (user.isAdmin) {
-        if (data.content.startsWith("kick")) {
-          let kickedUser = data.content.substring(4);
-          kickedUser = kickedUser.trim();
-          for (let [id, user] of room.users.entries()) {
-            if (user.username === kickedUser) {
-              room.users.delete(id);
-              room.usernameSet.delete(user.username);
-              kickMessage = {
-                content: `${user.username} 踢出聊天室！`,
-                sender: "Admin",
-                type: "TEXT",
-              };
-			  io.to(roomID).emit("update users", Array.from(room.users.values()));
-              break;
-            }
-          }
-        }
-      }
       if (user.username === undefined || user.username === "") {
         user.username = "Anonymous";
       }
       data.sender = user.username;
+      data.timestamp = new Date().toISOString();
       if (data.type === "TEXT") {
         data.content = md2html(data.content);
       }
       io.to(roomID).emit("message", data);
-      if (kickMessage) io.to(roomID).emit("message", kickMessage);
+      if (isSpecialRoom(roomID)) {
+        saveChatHistory(roomID, data);
+      }
     } else {
       let data = {
         content: `登录已过期，请刷新页面或点击[修改昵称]!`,
         sender: "Admin",
         type: "TEXT",
+        timestamp: new Date().toISOString()
       };
       socket.emit("message", data);
     }
@@ -143,8 +177,8 @@ io.sockets.on("connection", function (socket) {
       if (room.users.has(socket.id)) {
         userID2roomID.delete(socket.id);
         let username = room.users.get(socket.id).username;
-        room.usernameSet.delete(username);
         room.users.delete(socket.id);
+        room.usernameSet.delete(username);
         if (room.users.size === 0) {
           rooms.delete(roomID);
         }
@@ -153,12 +187,16 @@ io.sockets.on("connection", function (socket) {
           content: `${username} 已离开！`,
           sender: "Admin",
           type: "TEXT",
+          timestamp: new Date().toISOString()
         };
         io.to(roomID).emit("message", data);		
-		io.to(roomID).emit("update users", Array.from(room.users.values()));		
+        io.to(roomID).emit("update users", Array.from(room.users.values()));		
       }
     }
   });
 });
 
-server.listen(process.env.PORT || 3000);  
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+});

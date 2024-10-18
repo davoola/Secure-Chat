@@ -1,7 +1,7 @@
 let socket;
 let username = "";
 let registered = false;
-let roomID = window.location.search;
+let roomID = window.location.search.substring(1); 
 let dialogElement;
 let inputElement;
 let fileInputElement;
@@ -107,12 +107,14 @@ function changeUsername() {
 }
 
 function register() {
+  username = localStorage.getItem("username") || "";
   if (username !== "") {
     let password = localStorage.getItem("password") || "";
     socket.emit("register", username, roomID, password);
+  } else {
+    window.location.href = "/";
   }
 }
-
 function processInput(input) {
   input = input.trim();
   switch (input) {
@@ -154,22 +156,17 @@ function char2color(c) {
   return `#${r.toString(16)}${g.toString(16)}${b.toString(16)}`;
 }
 
-function printMessage(content, sender = "Admin", type = "TEXT") {
+function printMessage(content, sender = "Admin", type = "TEXT", timestamp = new Date().toISOString()) {
   let html;
   let firstChar = sender[0];
-  //Add time
-  let sendTime = new Date().toLocaleString(); // 获取当前时间
-  let formattedSender = `${sender} | ${sendTime}`; // 添加发送时间  
+  let sendTime = new Date(timestamp).toLocaleString();
+  let formattedSender = `${sender} | ${sendTime}`;
 
-  // 检查消息内容是否包含 YouTube 视频链接
   const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(?:embed\/)?(?:v\/)?(?:shorts\/)?(?:\S+)/g;
   const youtubeMatch = content.match(youtubeRegex); 
 
   if (youtubeMatch) {
-    // 提取 YouTube 视频 ID
     const videoId = youtubeMatch[0].split(/v=|v\/|embed\/|youtu\.be\/|shorts\//)[1].split(/[?&]/)[0];
-
-    // 生成 YouTube 嵌入式播放器的 HTML 代码
     html = `<div class="chat-message shown">
       <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
       <div class="nickname">${formattedSender}</div>
@@ -177,53 +174,50 @@ function printMessage(content, sender = "Admin", type = "TEXT") {
         <iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0"  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
       </div>
     </div>`;
-  } 
-  else {
-    // 处理其他类型的消息
-	switch (type) {
-		case "IMAGE":
-			html = `<div class="chat-message shown">
-		<div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
-		<div class="nickname">${formattedSender}</div>
-		<div class="message-box"><img src="${content}" alt="${content}" class="image-preview" data-src="${content}" onclick="showLightbox('${content}')"><div class="image-thumbnail" style="background-image: url('${content}')"></div></div>
-			</div>`
-			break;
-		case "AUDIO":
-			html = `<div class="chat-message shown">
-		<div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
-		<div class="nickname">${formattedSender}</div>
-		<div class="message-box"><audio controls src="${content}"></div>
-			</div>`
-			break;
-		case "VIDEO":
-			html = `<div class="chat-message shown">
-		<div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
-		<div class="nickname">${formattedSender}</div>
-		<div class="message-box"><video controls><source src="${content}"></video></div>
-			</div>`
-			break;
-		case "FILE":
-			let parts = content.split('/');
-			let text = parts[parts.length - 1];
-			html = `<div class="chat-message shown">
-		<div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
-		<div class="nickname">${formattedSender}</div>
-		<div class="message-box"><a href="${content}" download="${text}">${text}</a></div>
-			</div>`
-			break;
-		case "TEXT":
-			default:
-			html = `<div class="chat-message shown">
-		<div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
-		<div class="nickname">${formattedSender}</div>
-		<div class="message-box"><p>${content}</p></div>
-			</div>`
-			break;
-				} 
+  } else {
+    switch (type) {
+      case "IMAGE":
+        html = `<div class="chat-message shown">
+          <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
+          <div class="nickname">${formattedSender}</div>
+          <div class="message-box"><img src="${content}" alt="${content}" class="image-preview" data-src="${content}" onclick="showLightbox('${content}')"><div class="image-thumbnail" style="background-image: url('${content}')"></div></div>
+        </div>`;
+        break;
+      case "AUDIO":
+        html = `<div class="chat-message shown">
+          <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
+          <div class="nickname">${formattedSender}</div>
+          <div class="message-box"><audio controls src="${content}"></div>
+        </div>`;
+        break;
+      case "VIDEO":
+        html = `<div class="chat-message shown">
+          <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
+          <div class="nickname">${formattedSender}</div>
+          <div class="message-box"><video controls><source src="${content}"></video></div>
+        </div>`;
+        break;
+      case "FILE":
+        let parts = content.split('/');
+        let text = parts[parts.length - 1];
+        html = `<div class="chat-message shown">
+          <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
+          <div class="nickname">${formattedSender}</div>
+          <div class="message-box"><a href="${content}" download="${text}">${text}</a></div>
+        </div>`;
+        break;
+      case "TEXT":
+      default:
+        html = `<div class="chat-message shown">
+          <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
+          <div class="nickname">${formattedSender}</div>
+          <div class="message-box"><p>${content}</p></div>
+        </div>`;
+        break;
+    } 
+  }
   
-		}
-  
-  dialogElement.insertAdjacentHTML('beforeend', html)
+  dialogElement.insertAdjacentHTML('beforeend', html);
   dialogElement.scrollTop = dialogElement.scrollHeight;
 }
 
@@ -238,7 +232,7 @@ function sendMessage(content, type = "TEXT") {
 function initSocket() {
   socket = io();
   socket.on("message", function (message) {
-    printMessage(message.content, message.sender, message.type);
+    printMessage(message.content, message.sender, message.type, message.timestamp);
   });
   socket.on("register success", function () {
     registered = true;
@@ -256,6 +250,7 @@ function initSocket() {
   });
   socket.on("invalid password", function () {
     registered = false;
+	localStorage.removeItem("password");
     alert("密码错误，请返回首页重新输入！");
     window.location.href = "/";
   });
@@ -266,7 +261,21 @@ function initSocket() {
     alert("无效的聊天室ID，将返回首页。");
     window.location.href = "/";
   });
+  socket.on("unauthorized user", function () {
+    alert("您没有权限进入此聊天室。");
+    window.location.href = "/";
+  });
+  socket.on("room full", function () {
+    alert("聊天室已满，请稍后再试。");
+    window.location.href = "/";
+  });
+  socket.on("chat history", function (history) {
+    history.forEach(message => {
+      printMessage(message.content, message.sender, message.type, message.timestamp);
+    });
+  });
 }
+
 
 function closeWebsite() {
   if (confirm('确定要退出吗？')) {
@@ -301,7 +310,6 @@ function updateUserList(users) {
   userCountElement.textContent = users.length;
 }
 
-//图片显示
 function showLightbox(src) {
   let lightbox = document.getElementById("lightbox");
   let lightboxImage = document.querySelector(".lightbox-image");
@@ -310,9 +318,8 @@ function showLightbox(src) {
   let nextButton = document.querySelector(".next-button");
 
   let imageIndex = 0;
-  let imageArray = []; // 存储所有图片的 src
+  let imageArray = [];
 
-  // 收集所有图片的 src
   let imageElements = document.querySelectorAll(".image-preview");
   imageElements.forEach((img, index) => {
     imageArray.push(img.getAttribute("data-src"));
@@ -345,16 +352,15 @@ function showLightbox(src) {
     }
   };
   document.addEventListener("keydown", function (e) {
-    if (e.keyCode === 37 /* ArrowLeft */) {
+    if (e.keyCode === 37) {
       prevButton.click();
-    } else if (e.keyCode === 39 /* ArrowRight */) {
+    } else if (e.keyCode === 39) {
       nextButton.click();
-    } else if (e.keyCode === 27 /* Escape */) {
+    } else if (e.keyCode === 27) {
       lightbox.style.display = "none";
     }
   });
 }
-//图片显示
 
 function send() {
   let input = inputElement.value;
@@ -367,24 +373,15 @@ function send() {
 }
 
 window.onload = function () {
-  initSocket();
   dialogElement = document.getElementById("dialog");
   inputElement = document.getElementById("input");
   fileInputElement = document.getElementById("fileInput");
+  initSocket();
+  register();
   inputElement.addEventListener("keydown", function (e) {
-    if (e.keyCode == 13 /* ENTER */ && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       send();
-    } else if (e.keyCode == 13 /* ENTER */ && e.shiftKey) {
-      e.preventDefault();
-      inputElement.value += "\n";
     }
   });
-  username = localStorage.getItem("username");
-  roomID = window.location.search;
-  if (username) {
-    register();
-  } else {
-    window.location.href = "/";
-  }
 };
