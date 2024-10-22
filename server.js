@@ -105,7 +105,7 @@ io.sockets.on("connection", function (socket) {
 
     if (isSpecialRoom(roomID)) {
       if (roomID === "MyLove") {
-        if (username !== "Jack" && username !== "Amy") { // Special UserName
+        if (username !== "Jack" && username !== "Amy") { // Special Special UserName
           socket.emit("unauthorized user");
           return;
         }
@@ -140,37 +140,29 @@ io.sockets.on("connection", function (socket) {
     }
   });
   
-  
-
   socket.on("change username", function (newUsername, roomID = "/") {
     let room = getRoom(roomID);
     let oldUsername = room.users.get(socket.id).username;
 	
-	// Special handling for MyLove room
 	if (roomID === "MyLove") {
-		if (newUsername !== "Jack" && newUsername !== "Amy") {
+		if (newUsername !== "Jack" && newUsername !== "Amy") { //Special Special UserName
 		socket.emit("username change failed", "玉堂深处,惟迎知音……");
 		return;
 		}
 	}
 	
-    // Check if the new username is already in use in the current room
     if (room.usernameSet.has(newUsername) && newUsername !== oldUsername) {
       socket.emit("username change failed", "用户昵称已被占用");
       return;
     }
-
-    // Remove old username and add new username to the set
+	
     room.usernameSet.delete(oldUsername);
     room.usernameSet.add(newUsername);
-
-    // Update the username in the room's users map
+	
     room.users.get(socket.id).username = newUsername;
-
-    // Notify the client that the username change was successful
+	
     socket.emit("username change success", newUsername);
-
-    // Notify all users in the room about the username change
+	
     let data = {
       content: `${oldUsername} 已更改昵称为 ${newUsername}`,
       sender: "Admin",
