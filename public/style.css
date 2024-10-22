@@ -157,6 +157,44 @@ body {
     font-size: 2rem;
     margin-bottom: 0.5rem;
 }
+
+/* 公告功能 */
+
+.announcement {
+  position: fixed;
+  top: 15px;
+  right: 35px;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #F5F5DC; 
+  padding: 10px;
+  border-radius: 20px;
+  max-width: 350px;
+  word-wrap: break-word;
+  z-index: 1000;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.announcement a {
+  color: #00ffff;
+}
+
+.announcement h1, .announcement h2, .announcement h3 {
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+.announcement ul, .announcement ol {
+  padding-left: 20px;
+}
+
+.announcement code {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+
 /* 这是一条单行注释 */
 .lightbox {
   display: none;

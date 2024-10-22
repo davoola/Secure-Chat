@@ -6,6 +6,7 @@ let dialogElement;
 let inputElement;
 let fileInputElement;
 let onlineUsers = new Set();
+let announcementElement; // 新增：公告栏元素
 
 function filename2type(fileName) {
   let extension = fileName.split(".").pop().toLowerCase();
@@ -116,11 +117,16 @@ function register() {
 }
 function processInput(input) {
   input = input.trim();
+  if (input.startsWith("announce ")) {
+    const newAnnouncement = input.slice(10);
+    socket.emit("update announcement", newAnnouncement);
+    return;
+  }
   switch (input) {
     case "":
       break;
     case "help":
-      printMessage("<ul><li><strong>help</strong> — 帮助说明</li><li><strong>clear</strong> — 清除聊天记录</li><li><strong>change</strong> — 修改用户名</li><li><strong>exit</strong> — 退出当前聊天窗口</li></ul>", "Admin");
+      printMessage("<ul><li><strong>help</strong> — 帮助说明</li><li><strong>clear</strong> — 清除聊天记录</li><li><strong>announce [内容]</strong> — 更新公告栏 (支持Markdown语法)</li><li><strong>change</strong> — 修改用户名</li><li><strong>exit</strong> — 退出当前聊天窗口</li></ul>", "Admin");
       break;
     case "clear":
       clearMessage();
@@ -236,6 +242,11 @@ function initSocket() {
   socket.on("register success", function () {
     registered = true;
     clearInputBox();
+  });
+
+  // 修改：处理更新公告的事件
+  socket.on("update announcement", function (htmlAnnouncement) {
+    announcementElement.innerHTML = htmlAnnouncement;
   });
   
   socket.on("username change success", function (newUsername) {
@@ -385,6 +396,7 @@ window.onload = function () {
   dialogElement = document.getElementById("dialog");
   inputElement = document.getElementById("input");
   fileInputElement = document.getElementById("fileInput");
+  announcementElement = document.getElementById("announcement"); // 新增：获取公告栏元素
   initSocket();
   register();
   inputElement.addEventListener("keydown", function (e) {
