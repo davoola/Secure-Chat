@@ -6,7 +6,7 @@ let dialogElement;
 let inputElement;
 let fileInputElement;
 let onlineUsers = new Set();
-let announcementElement; // 新增：公告栏元素
+let announcementElement; 
 
 function filename2type(fileName) {
   let extension = fileName.split(".").pop().toLowerCase();
@@ -244,7 +244,6 @@ function initSocket() {
     clearInputBox();
   });
 
-  // 修改：处理更新公告的事件
   socket.on("update announcement", function (htmlAnnouncement) {
     announcementElement.innerHTML = htmlAnnouncement;
   });
@@ -295,7 +294,6 @@ function initSocket() {
     });
   });
 }
-
 
 function closeWebsite() {
   if (confirm('确定要退出吗？')) {
@@ -396,7 +394,7 @@ window.onload = function () {
   dialogElement = document.getElementById("dialog");
   inputElement = document.getElementById("input");
   fileInputElement = document.getElementById("fileInput");
-  announcementElement = document.getElementById("announcement"); // 新增：获取公告栏元素
+  announcementElement = document.getElementById("announcement"); 
   initSocket();
   register();
   inputElement.addEventListener("keydown", function (e) {

@@ -195,7 +195,7 @@ body {
 }
 
 
-/* 这是一条单行注释 */
+/* 图片展示效果 */
 .lightbox {
   display: none;
   position: fixed;
@@ -330,7 +330,6 @@ body {
   margin-left: 80px;
 }
 
-/* 这是一条单行注释 */
 .panel {
     width: 100%;
     height: 5em;

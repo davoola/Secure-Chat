@@ -42,7 +42,7 @@ function getRoom(roomID) {
       users: new Map(),
       usernameSet: new Set(),
       password: getSpecialRoomPassword(roomID),
-      announcement: "" // 新增：初始化公告为空字符串
+      announcement: "" 
     };
     rooms.set(roomID, room);
   }
@@ -134,8 +134,7 @@ io.sockets.on("connection", function (socket) {
     };
     io.to(roomID).emit("message", data);
     io.to(roomID).emit("update users", Array.from(room.users.values()));
-    
-    // 新增：发送当前公告给新加入的用户
+	
     socket.emit("update announcement", room.announcement);
 
     if (isSpecialRoom(roomID)) {
@@ -143,8 +142,7 @@ io.sockets.on("connection", function (socket) {
       socket.emit("chat history", chatHistory);
     }
   });
-
-  // 修改：处理更新公告的事件，使用 md2html 函数
+  
   socket.on("update announcement", function (newAnnouncement) {
     let roomID = userID2roomID.get(socket.id);
     if (roomID) {
@@ -152,10 +150,11 @@ io.sockets.on("connection", function (socket) {
       if (room.users.get(socket.id).isAdmin) {
         room.announcement = newAnnouncement;
         const htmlAnnouncement = md2html(newAnnouncement);
+        room.announcement = htmlAnnouncement; 
         io.to(roomID).emit("update announcement", htmlAnnouncement);
       } else {
         socket.emit("message", {
-          content: "只有管理员可以更新公告。",
+          content: "只有管理员可以更新公告!",
           sender: "Admin",
           type: "TEXT",
           timestamp: new Date().toISOString()
@@ -178,23 +177,18 @@ io.sockets.on("connection", function (socket) {
 		}
 	}
 	
-    // Check if the new username is already in use in the current room
     if (room.usernameSet.has(newUsername) && newUsername !== oldUsername) {
       socket.emit("username change failed", "用户昵称已被占用");
       return;
     }
-
-    // Remove old username and add new username to the set
+	
     room.usernameSet.delete(oldUsername);
     room.usernameSet.add(newUsername);
-
-    // Update the username in the room's users map
+	
     room.users.get(socket.id).username = newUsername;
-
-    // Notify the client that the username change was successful
+	
     socket.emit("username change success", newUsername);
-
-    // Notify all users in the room about the username change
+	
     let data = {
       content: `${oldUsername} 已更改昵称为 ${newUsername}`,
       sender: "Admin",
