@@ -35,6 +35,39 @@ app.use(function (req, res) {
 let rooms = new Map();
 let userID2roomID = new Map();
 
+function getAnnouncementFilePath(roomID) {
+  return path.join(__dirname, 'public/upload', `__announcement-${roomID}.json`);
+}
+
+function loadSpecialRoomAnnouncement(roomID) {
+  if (!isSpecialRoom(roomID)) return "";
+  
+  const filePath = getAnnouncementFilePath(roomID);
+  try {
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, JSON.stringify({ announcement: "" }), 'utf8');
+      return "";
+    }
+    const data = fs.readFileSync(filePath, 'utf8');
+    const parsed = JSON.parse(data);
+    return parsed.announcement || "";
+  } catch (err) {
+    console.error('Error loading announcement:', err);
+    return "";
+  }
+}
+
+function saveSpecialRoomAnnouncement(roomID, announcement) {
+  if (!isSpecialRoom(roomID)) return;
+  
+  const filePath = getAnnouncementFilePath(roomID);
+  try {
+    fs.writeFileSync(filePath, JSON.stringify({ announcement }, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Error saving announcement:', err);
+  }
+}
+
 function getRoom(roomID) {
   let room = rooms.get(roomID);
   if (!room) {
@@ -42,7 +75,7 @@ function getRoom(roomID) {
       users: new Map(),
       usernameSet: new Set(),
       password: getSpecialRoomPassword(roomID),
-      announcement: "" 
+      announcement: loadSpecialRoomAnnouncement(roomID)
     };
     rooms.set(roomID, room);
   }
@@ -64,7 +97,8 @@ function loadChatHistory(roomID) {
   const filePath = path.join(__dirname, 'public/upload', `_records-${roomID}.json`);
   try {
     if (!fs.existsSync(filePath)) {
-      fs.writeFileSync(filePath, JSON.stringify([]));
+      fs.writeFileSync(filePath, JSON.stringify([]), 'utf8');
+      return [];
     }
     const data = fs.readFileSync(filePath, 'utf8');
     return JSON.parse(data || '[]');
@@ -85,7 +119,7 @@ function saveChatHistory(roomID, message) {
       records = JSON.parse(data || '[]');
     }
     records.push(message);
-    fs.writeFileSync(filePath, JSON.stringify(records, null, 2));
+    fs.writeFileSync(filePath, JSON.stringify(records, null, 2), 'utf8');
   } catch (err) {
     console.error('Error saving chat history:', err);
   }
@@ -134,8 +168,11 @@ io.sockets.on("connection", function (socket) {
     };
     io.to(roomID).emit("message", data);
     io.to(roomID).emit("update users", Array.from(room.users.values()));
-	
-    socket.emit("update announcement", room.announcement);
+    
+    // 新增：发送当前公告给新加入的用户
+    if (room.announcement) {
+      socket.emit("update announcement", md2html(room.announcement));
+    }
 
     if (isSpecialRoom(roomID)) {
       const chatHistory = loadChatHistory(roomID);
@@ -150,7 +187,9 @@ io.sockets.on("connection", function (socket) {
       if (room.users.get(socket.id).isAdmin) {
         room.announcement = newAnnouncement;
         const htmlAnnouncement = md2html(newAnnouncement);
-        room.announcement = htmlAnnouncement; 
+        if (isSpecialRoom(roomID)) {
+          saveSpecialRoomAnnouncement(roomID, newAnnouncement);
+        }
         io.to(roomID).emit("update announcement", htmlAnnouncement);
       } else {
         socket.emit("message", {
@@ -167,7 +206,7 @@ io.sockets.on("connection", function (socket) {
 
   socket.on("change username", function (newUsername, roomID = "/") {
     let room = getRoom(roomID);
-    let oldUsername = room.users.get(socket.id).username;	
+    let oldUsername = room.users.get(socket.id).username;
 	
 	// Special handling for MyLove room
 	if (roomID === "MyLove") {
