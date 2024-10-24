@@ -7,6 +7,7 @@ marked.setOptions({
   gfm: true, // GitHub Flavored Markdown
   breaks: true, // Convert \n to <br>
   tables: true, // Enable tables
+  headerIds: false,
   pedantic: false,
   sanitize: false, // Let sanitize-html handle this
   smartLists: true,
