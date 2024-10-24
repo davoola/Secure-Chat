@@ -8,7 +8,7 @@ html, body {
     margin: 0;
     padding: 0;
     background-color: rgb(32, 32, 29);
-    font-family: Consolas, "Microsoft YaHei", monospace;
+    font-family: Consolas, "WenQuanYi Micro Hei", monospace;
 }
 
 body {
@@ -170,6 +170,7 @@ body {
   border-radius: 20px;
   max-width: 350px;
   word-wrap: break-word;
+  font-family: Consolas, "PingFang SC", sans-serif;
   z-index: 1000;
   max-height: 250px;
   overflow-y: auto;
@@ -496,4 +497,156 @@ The following style code is copied from: https://github.com/koishijs/koishi, MIT
 
 .message-box p {
     margin: 0
+}
+
+/* 丰富markdown功能 */
+
+/* Code block styling */
+pre {
+  background-color: #1e1e1e;
+  border-radius: 10px;
+  padding: 1em;
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+
+code {
+  font-family: 'Consolas', 'Monaco', 'Andale Mono', monospace;
+  font-size: 0.9em;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  background-color: rgba(27, 31, 35, 0.05);
+}
+
+pre code {
+  padding: 0;
+  background-color: transparent;
+}
+
+.code-block-wrapper {
+  position: relative;
+}
+
+.copy-code-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 4px;
+  padding: 4px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.copy-code-btn:hover {
+  opacity: 1;
+}
+
+.copy-code-btn svg {
+  fill: #fff;
+}
+
+/* Table styling */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  background-color: #2d2d2d;
+  border-radius: 4px;
+}
+
+th, td {
+  border: 1px solid #444;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #363636;
+  font-weight: bold;
+}
+
+tr:nth-child(even) {
+  background-color: #333;
+}
+
+/* Table alignment */
+table td[align="left"],
+table th[align="left"] {
+  text-align: left;
+}
+
+table td[align="center"],
+table th[align="center"] {
+  text-align: center;
+}
+
+table td[align="right"],
+table th[align="right"] {
+  text-align: right;
+}
+
+/* Message box enhancements */
+.message-box {
+  max-width: 85%;
+}
+
+.message-box p {
+  margin: 0.5em 0;
+}
+
+.message-box ul, .message-box ol {
+  margin: 0.5em 0;
+  padding-left: 2em;
+}
+
+.message-box blockquote {
+  border-left: 4px solid #666;
+  margin: 0.5em 0;
+  padding-left: 1em;
+  color: #999;
+}
+
+/* Markdown help dialog */
+.markdown-help {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #2d2d2d;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  max-width: 80%;
+  max-height: 80vh;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.markdown-help h3 {
+  margin-top: 0;
+  color: #fff;
+}
+
+.markdown-help table {
+  margin: 1em 0;
+}
+
+.markdown-help code {
+  background-color: #363636;
+  color: #e6e6e6;
+}
+
+.close-help {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  color: #fff;
+  font-size: 20px;
+  background: none;
+  border: none;
+  padding: 0;
 }

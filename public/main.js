@@ -390,6 +390,69 @@ function send() {
   }
 }
 
+// 丰富Markdown语法，主要添加表格及代码块功能
+
+function showMarkdownHelp() {
+  const helpDialog = document.createElement('div');
+  helpDialog.className = 'markdown-help';
+  helpDialog.innerHTML = `
+    <button class="close-help" onclick="this.parentElement.remove()">&times;</button>
+    <h3>Markdown 语法说明</h3>
+    <table>
+      <tr>
+        <th>效果</th>
+        <th>语法</th>
+      </tr>
+      <tr>
+        <td><strong>粗体</strong></td>
+        <td><code>**粗体** or __粗体__</code></td>
+      </tr>
+      <tr>
+        <td><em>斜体</em></td>
+        <td><code>*斜体* or _斜体_</code></td>
+      </tr>
+      <tr>
+        <td>表格（包含对齐）</td>
+        <td><code>| 左对齐 | 居中对齐 | 右对齐 |<br>|:--- |:---:| ---:|<br>| 内容 | 内容 | 内容 |<br>| 内容 | 内容 | 内容 |</code></td>
+      </tr>
+        <td>代码块</td>
+        <td><code>\`\`\`语言<br>代码内容<br>\`\`\`</code></td>
+      </tr>
+      <tr>
+        <td>链接</td>
+        <td><code>[链接文字](URL)<br><br>注：不支持markdown图片</code></td>
+      </tr>
+      <tr>
+        <td>列表</td>
+        <td><code>- 项目1<br>- 项目2</code></td>
+      </tr>
+      <tr>
+        <td>引用</td>
+        <td><code>> 引用内容</code></td>
+      </tr>
+    </table>
+    <p>支持的代码高亮语言：js, python, java, cpp, html, css 等</p>
+  `;
+  document.body.appendChild(helpDialog);
+}
+
+function copyCodeToClipboard(button) {
+  const codeBlock = button.nextElementSibling.querySelector('code');
+  const textArea = document.createElement('textarea');
+  textArea.value = codeBlock.textContent;
+  document.body.appendChild(textArea);
+  textArea.select();
+  document.execCommand('copy');
+  document.body.removeChild(textArea);
+  
+  // Optional: Show a "Copied!" message
+  const originalText = button.innerHTML;
+  button.textContent = 'Copied!';
+  setTimeout(() => {
+    button.innerHTML = originalText;
+  }, 2000);
+}
+
 window.onload = function () {
   dialogElement = document.getElementById("dialog");
   inputElement = document.getElementById("input");
@@ -398,9 +461,12 @@ window.onload = function () {
   initSocket();
   register();
   inputElement.addEventListener("keydown", function (e) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      send();
-    }
+	if (e.key === "Enter") {
+	  if (e.shiftKey) { // Shift + Enter for new line		 
+		  return;
+	  }
+	  e.preventDefault();
+	  send();
+	}
   });
 };
