@@ -391,7 +391,6 @@ function send() {
 }
 
 // 丰富Markdown语法，主要添加表格及代码块功能
-
 function showMarkdownHelp() {
   const helpDialog = document.createElement('div');
   helpDialog.className = 'markdown-help';
