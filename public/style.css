@@ -587,6 +587,14 @@ table th[align="right"] {
   text-align: right;
 }
 
+.task-list-item {
+  list-style-type: none;
+}
+
+.task-list-item input[type="checkbox"] {
+  margin-right: 0.5em;
+}
+
 /* Message box enhancements */
 .message-box {
   max-width: 85%;

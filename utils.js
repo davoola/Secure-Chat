@@ -8,10 +8,13 @@ marked.setOptions({
   breaks: true, // Convert \n to <br>
   tables: true, // Enable tables
   headerIds: false,
+  mangle: false,
   pedantic: false,
   sanitize: false, // Let sanitize-html handle this
   smartLists: true,
   smartypants: true,
+  // Add support for task lists
+  checkbox: true,
   highlight: function(code, lang) {
     try {
       if (lang) {
@@ -32,7 +35,7 @@ const sanitizeOptions = {
     'blockquote', 'p', 'a', 'ul', 'ol', 'nl', 'li',
     'b', 'i', 'strong', 'em', 'strike', 'code', 'hr', 'br',
     'div', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'pre',
-    'span' // For syntax highlighting
+    'span', 'input' // Add 'input' for checkboxes
   ],
   allowedAttributes: {
     'a': ['href', 'target', 'rel'],
@@ -41,7 +44,8 @@ const sanitizeOptions = {
     'pre': ['class'],
     'span': ['class', 'style'],
     'td': ['align', 'style'],
-    'th': ['align', 'style']
+    'th': ['align', 'style'],
+    'input': ['type', 'checked', 'disabled'] // Allow attributes for checkboxes
   },
   allowedStyles: {
     'td': {
@@ -55,7 +59,7 @@ const sanitizeOptions = {
       'background-color': [/^#(0x)?[0-9a-f]+$/i, /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/]
     }
   },
-  selfClosing: ['img', 'br', 'hr'],
+  selfClosing: ['img', 'br', 'hr', 'input'],
   allowedSchemes: ['http', 'https', 'ftp', 'mailto'],
   allowedSchemesByTag: {},
   allowProtocolRelative: true,
@@ -75,6 +79,11 @@ function md2html(markdown) {
                 </button>
                 <pre><code class="${lang}">${code}</code></pre>
               </div>`;
+    });
+    
+    // Make task list items interactive
+    processedHtml = processedHtml.replace(/<li><input type="checkbox"(.*?)><\/li>/g, (match, attributes) => {
+      return `<li class="task-list-item"><input type="checkbox"${attributes} onclick="this.checked = !this.checked"></li>`;
     });
     
     return processedHtml;
