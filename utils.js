@@ -2,18 +2,16 @@ const { marked } = require('marked');
 const sanitizeHtml = require('sanitize-html');
 const hljs = require('highlight.js');
 
-// Configure marked options
 marked.setOptions({
-  gfm: true, // GitHub Flavored Markdown
-  breaks: true, // Convert \n to <br>
-  tables: true, // Enable tables
+  gfm: true,
+  breaks: true,
+  tables: true,
   headerIds: false,
   mangle: false,
   pedantic: false,
-  sanitize: false, // Let sanitize-html handle this
+  sanitize: false,
   smartLists: true,
-  smartypants: true,
-  // Add support for task lists
+  smartypants: true, 
   checkbox: true,
   highlight: function(code, lang) {
     try {
@@ -28,14 +26,13 @@ marked.setOptions({
   }
 });
 
-// Configure sanitize-html options
 const sanitizeOptions = {
   allowedTags: [
     'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
     'blockquote', 'p', 'a', 'ul', 'ol', 'nl', 'li',
     'b', 'i', 'strong', 'em', 'strike', 'code', 'hr', 'br',
     'div', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'pre',
-    'span', 'input' // Add 'input' for checkboxes
+    'span', 'input'
   ],
   allowedAttributes: {
     'a': ['href', 'target', 'rel'],
@@ -45,7 +42,7 @@ const sanitizeOptions = {
     'span': ['class', 'style'],
     'td': ['align', 'style'],
     'th': ['align', 'style'],
-    'input': ['type', 'checked', 'disabled'] // Allow attributes for checkboxes
+    'input': ['type', 'checked', 'disabled']
   },
   allowedStyles: {
     'td': {
@@ -70,8 +67,7 @@ function md2html(markdown) {
   try {
     const rawHtml = marked(markdown);
     let processedHtml = sanitizeHtml(rawHtml, sanitizeOptions);
-    
-    // Add copy button to code blocks
+	
     processedHtml = processedHtml.replace(/<pre><code class="(.*?)">([\s\S]*?)<\/code><\/pre>/g, (match, lang, code) => {
       return `<div class="code-block-wrapper">
                 <button class="copy-code-btn" onclick="copyCodeToClipboard(this)">
@@ -80,8 +76,7 @@ function md2html(markdown) {
                 <pre><code class="${lang}">${code}</code></pre>
               </div>`;
     });
-    
-    // Make task list items interactive
+	
     processedHtml = processedHtml.replace(/<li><input type="checkbox"(.*?)><\/li>/g, (match, attributes) => {
       return `<li class="task-list-item"><input type="checkbox"${attributes} onclick="this.checked = !this.checked"></li>`;
     });

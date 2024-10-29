@@ -745,7 +745,7 @@ function declineSync() {
 }
 
 function isSpecialRoom(roomID) { // Special roomID
-  return ["MakeLove", "MyLove", "Tech", "Science"].includes(roomID);
+  return ["MyLove", "Tech", "Sci"].includes(roomID);
 }
 
 function onVideoPlay() {
