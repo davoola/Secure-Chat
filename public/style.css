@@ -72,7 +72,7 @@ body {
     display: block;
 }
 
-/* New styles for index page */
+/* Styles for index page */
 .index-body {
     margin: 0;
     padding: 0;
@@ -158,7 +158,7 @@ body {
     margin-bottom: 0.5rem;
 }
 
-/* 公告功能 */
+/* Styles for announcement */
 
 .announcement {
   position: fixed;
@@ -195,7 +195,7 @@ body {
   border-radius: 3px;
 }
 
-/* 图片展示效果 */
+/* Styles for Picture display effect */
 .lightbox {
   display: none;
   position: fixed;
@@ -498,9 +498,8 @@ The following style code is copied from: https://github.com/koishijs/koishi, MIT
     margin: 0
 }
 
-/* 丰富markdown功能 */
+/* Styles for Markdown */
 
-/* Code block styling */
 pre {
   background-color: #1e1e1e;
   border-radius: 10px;
@@ -547,7 +546,8 @@ pre code {
   fill: #fff;
 }
 
-/* Table styling */
+/* Styles for Markdown table */
+
 table {
   border-collapse: collapse;
   width: 100%;
@@ -656,4 +656,146 @@ table th[align="right"] {
   background: none;
   border: none;
   padding: 0;
+}
+
+/* Style for Video Sync Player */
+
+.sync-video-container {
+  position: fixed;
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(112, 128, 144, 0.9);
+  border-radius: 8px;
+  padding: 10px;
+  z-index: 1000;
+  resize: both;
+  overflow: hidden;
+  width: 960px;
+  height: 640px;
+  min-width: 320px;
+  min-height: 240px;
+  max-width: 90vw;
+  max-height: 80vh;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: none;
+}
+
+.sync-video-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
+  cursor: move;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.sync-video-title {
+  color: white;
+  font-size: 14px;
+  margin: 0;
+  padding: 0;
+}
+
+.sync-video-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.sync-video-controls button {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.sync-video-controls button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sync-video-player {
+  width: 100%;
+  height: calc(100% - 40px);
+  border-radius: 4px;
+  
+}
+
+.sync-invitation {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  z-index: 1001;
+  display: none;
+  animation: slideIn 0.3s ease-out;
+}
+
+.sync-invitation-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.sync-invitation-buttons button {
+  padding: 5px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.accept-sync {
+  background: #4CAF50;
+  color: white;
+}
+
+.decline-sync {
+  background: #f44336;
+  color: white;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: white;
+  right: 0;
+  bottom: 0;
+  cursor: se-resize;
+}
+
+.sync-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  z-index: 1001;
+  animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(20px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-20px); }
 }

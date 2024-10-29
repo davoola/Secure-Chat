@@ -75,7 +75,9 @@ function getRoom(roomID) {
       users: new Map(),
       usernameSet: new Set(),
       password: getSpecialRoomPassword(roomID),
-      announcement: loadSpecialRoomAnnouncement(roomID)
+      announcement: loadSpecialRoomAnnouncement(roomID),
+      currentSyncVideo: null, 
+      syncParticipants: new Set()
     };
     rooms.set(roomID, room);
   }
@@ -178,7 +180,124 @@ io.sockets.on("connection", function (socket) {
       const chatHistory = loadChatHistory(roomID);
       socket.emit("chat history", chatHistory);
     }
+  });  
+  
+    // 新增：视频同步播放功能
+  socket.on("start_sync_video", function(data) {
+    if (!isSpecialRoom(data.roomID)) return;
+    
+    const room = getRoom(data.roomID);
+    const user = room.users.get(socket.id);
+    
+    room.currentSyncVideo = {
+      videoId: data.videoId,
+      url: data.url,
+      initiator: socket.id
+    };
+    room.syncParticipants.clear();
+    room.syncParticipants.add(socket.id);
+    
+    socket.to(data.roomID).emit('sync_video_invitation', {
+      videoId: data.videoId,
+      url: data.url,
+      username: user.username
+    });
   });
+
+  socket.on('sync_video_join', function(data) {
+    if (!isSpecialRoom(data.roomID)) return;
+    const room = getRoom(data.roomID);
+    
+    if (room.currentSyncVideo && room.currentSyncVideo.videoId === data.videoId) {
+      room.syncParticipants.add(socket.id);
+      socket.to(room.currentSyncVideo.initiator).emit('sync_video_join', {
+        videoId: data.videoId
+      });
+    }
+  });
+
+  socket.on('sync_video_state', function(data) {
+    if (!isSpecialRoom(data.roomID)) return;
+    const room = getRoom(data.roomID);
+    
+    if (room.currentSyncVideo && room.currentSyncVideo.videoId === data.videoId) {
+      socket.to(data.roomID).emit('sync_video_state', {
+        videoId: data.videoId,
+        time: data.time,
+        playing: data.playing
+      });
+    }
+  });
+
+  socket.on('sync_video_control', function(data) {
+    if (!isSpecialRoom(data.roomID)) return;
+    const room = getRoom(data.roomID);
+    
+    if (room.currentSyncVideo && room.currentSyncVideo.videoId === data.videoId) {
+      socket.to(data.roomID).emit('sync_video_control', {
+        type: data.type,
+        time: data.time,
+        videoId: data.videoId
+      });
+    }
+  });  
+
+  socket.on('sync_video_accepted', function(data) {
+    if (!isSpecialRoom(data.roomID)) return;
+    const room = getRoom(data.roomID);
+    const user = room.users.get(socket.id);
+
+    if (room.currentSyncVideo && room.currentSyncVideo.videoId === data.videoId) {
+      room.syncParticipants.add(socket.id);
+      socket.to(data.roomID).emit('sync_video_accepted', {
+        videoId: data.videoId,
+        username: user.username
+    });
+	
+      socket.emit('message', {
+        content: "你已成功加入视频同步播放！",
+        sender: "Admin",
+        type: "TEXT",
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+  
+  socket.on('sync_video_declined', function(data) {
+    if (!isSpecialRoom(data.roomID)) return;
+    const room = getRoom(data.roomID);
+    const user = room.users.get(socket.id);
+  
+    if (room.currentSyncVideo && room.currentSyncVideo.videoId === data.videoId) {
+      socket.to(room.currentSyncVideo.initiator).emit('sync_video_declined', {
+        videoId: data.videoId,
+        username: user.username
+      });
+    }
+  });
+
+  socket.on('leave_sync_video', function(data) {
+    if (!isSpecialRoom(data.roomID)) return;
+    const room = getRoom(data.roomID);
+    const user = room.users.get(socket.id);
+    
+    if (room.syncParticipants) {
+      room.syncParticipants.delete(socket.id);
+    }
+    
+    if (room.currentSyncVideo && room.currentSyncVideo.initiator === socket.id) {
+      room.currentSyncVideo = null;
+      room.syncParticipants.clear();
+    }
+    
+    socket.to(data.roomID).emit('message', {
+      content: `${user.username} 退出了视频同步播放`,
+      sender: "Admin",
+      type: "TEXT",
+      timestamp: new Date().toISOString()
+    });
+  });
+
   
   socket.on("update announcement", function (newAnnouncement) {
     let roomID = userID2roomID.get(socket.id);
@@ -201,8 +320,6 @@ io.sockets.on("connection", function (socket) {
       }
     }
   });
-  
-  
 
   socket.on("change username", function (newUsername, roomID = "/") {
     let room = getRoom(roomID);
@@ -220,14 +337,10 @@ io.sockets.on("connection", function (socket) {
       socket.emit("username change failed", "用户昵称已被占用");
       return;
     }
-	
     room.usernameSet.delete(oldUsername);
     room.usernameSet.add(newUsername);
-	
     room.users.get(socket.id).username = newUsername;
-	
     socket.emit("username change success", newUsername);
-	
     let data = {
       content: `${oldUsername} 已更改昵称为 ${newUsername}`,
       sender: "Admin",
@@ -238,7 +351,7 @@ io.sockets.on("connection", function (socket) {
     io.to(roomID).emit("update users", Array.from(room.users.values()));
   });
 
-  socket.on("message", function (data, roomID = "/") {  	
+  socket.on("message", function (data, roomID = "/") {
     let room = getRoom(roomID);
     if (room.users.has(socket.id)) {
       if (!data) return;
@@ -277,6 +390,15 @@ io.sockets.on("connection", function (socket) {
         let username = room.users.get(socket.id).username;
         room.users.delete(socket.id);
         room.usernameSet.delete(username);
+        
+        if (room.syncParticipants) {
+          room.syncParticipants.delete(socket.id);
+        }
+        
+        if (room.currentSyncVideo && room.currentSyncVideo.initiator === socket.id) {
+          room.currentSyncVideo = null;
+          room.syncParticipants.clear();
+        }
         if (room.users.size === 0) {
           rooms.delete(roomID);
         }
@@ -287,8 +409,8 @@ io.sockets.on("connection", function (socket) {
           type: "TEXT",
           timestamp: new Date().toISOString()
         };
-        io.to(roomID).emit("message", data);		
-        io.to(roomID).emit("update users", Array.from(room.users.values()));		
+        io.to(roomID).emit("message", data);
+        io.to(roomID).emit("update users", Array.from(room.users.values()));
       }
     }
   });

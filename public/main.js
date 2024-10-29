@@ -7,6 +7,13 @@ let inputElement;
 let fileInputElement;
 let onlineUsers = new Set();
 let announcementElement; 
+let syncVideoContainer;
+let syncVideoPlayer;
+let currentSyncVideoId = null;
+let isDragging = false;
+let isResizing = false;
+let dragStartX, dragStartY, initialX, initialY;
+let resizeStartX, resizeStartY, initialWidth, initialHeight;
 
 function filename2type(fileName) {
   let extension = fileName.split(".").pop().toLowerCase();
@@ -199,7 +206,10 @@ function printMessage(content, sender = "Admin", type = "TEXT", timestamp = new 
         html = `<div class="chat-message shown">
           <div class="avatar" style="background-color:${char2color(firstChar)}">${firstChar.toUpperCase()}</div>
           <div class="nickname">${formattedSender}</div>
-          <div class="message-box"><video controls><source src="${content}"></video></div>
+          <div class="message-box">
+          <video controls><source src="${content}"></video>
+          ${isSpecialRoom(roomID) ? `<button onclick="startSyncVideo('${content}')">发起同步播放</button>` : ''}
+          </div>
         </div>`;
         break;
       case "FILE":
@@ -243,7 +253,109 @@ function initSocket() {
     registered = true;
     clearInputBox();
   });
+  
+  // 视频同步相关的事件处理
+  socket.on('sync_video_invitation', function(data) {
+    const invitation = document.createElement('div');
+    invitation.className = 'sync-invitation';
+    invitation.setAttribute('data-video-id', data.videoId);
+    invitation.style.display = 'block'; 
+    invitation.innerHTML = `
+      <p>${data.username} 邀请你加入视频同步播放</p>
+      <div class="sync-invitation-buttons">
+        <button class="accept-sync" onclick="acceptSync('${data.videoId}', '${data.url}')">接受</button>
+        <button class="decline-sync" onclick="declineSync()">拒绝</button>
+      </div>
+    `;
+    document.body.appendChild(invitation);
+    
+    setTimeout(() => {
+      if (invitation.parentNode) {
+        invitation.parentNode.removeChild(invitation);
+      }
+    }, 10000);
+  });
 
+  socket.on('sync_video_accepted', function(data) {
+    const message = document.createElement('div');
+    message.className = 'sync-notification';
+    message.textContent = `${data.username} 接受了视频同步邀请`;
+    document.body.appendChild(message);
+
+    setTimeout(() => {
+       if (message.parentNode) {
+		message.parentNode.removeChild(message);
+       }
+    }, 3000);
+  });  
+
+  socket.on('sync_video_control', function(data) {
+    if (!currentSyncVideoId || currentSyncVideoId !== data.videoId) return;  
+    const timeDiff = Math.abs(syncVideoPlayer.currentTime - data.time);
+	
+    syncVideoPlayer.removeEventListener('seeked', onVideoSeeked);
+    syncVideoPlayer.removeEventListener('play', onVideoPlay);
+    syncVideoPlayer.removeEventListener('pause', onVideoPause);
+  
+    switch (data.type) {
+      case 'play':
+        if (timeDiff > 0.5) {
+			syncVideoPlayer.currentTime = data.time;
+		}
+		syncVideoPlayer.play().catch(console.error);
+		break;
+      case 'pause':
+        if (timeDiff > 0.5) {
+			syncVideoPlayer.currentTime = data.time;
+		}
+		syncVideoPlayer.pause();
+		break;
+      case 'seek':
+		syncVideoPlayer.currentTime = data.time;
+		break;
+	}
+	
+    setTimeout(() => {
+      syncVideoPlayer.addEventListener('seeked', onVideoSeeked);
+      syncVideoPlayer.addEventListener('play', onVideoPlay);
+      syncVideoPlayer.addEventListener('pause', onVideoPause);
+	}, 100);
+  });
+
+  socket.on('sync_video_declined', function(data) {
+    const message = document.createElement('div');
+    message.className = 'sync-notification';
+    message.textContent = `${data.username} 拒绝了同步播放邀请`;
+    document.body.appendChild(message);
+  
+    setTimeout(() => {
+      if (message.parentNode) {
+        message.parentNode.removeChild(message);
+      }
+    }, 3000);
+  });
+
+  socket.on('sync_video_join', function(data) {
+    if (currentSyncVideoId === data.videoId) {
+      socket.emit('sync_video_state', {
+        videoId: currentSyncVideoId,
+        time: syncVideoPlayer.currentTime,
+        playing: !syncVideoPlayer.paused,
+        roomID
+      });
+    }
+  });
+
+  socket.on('sync_video_state', function(data) {
+    if (!currentSyncVideoId || currentSyncVideoId !== data.videoId) return;
+    syncVideoPlayer.currentTime = data.time;
+    if (data.playing) {
+      syncVideoPlayer.play().catch(console.error);
+    } else {
+      syncVideoPlayer.pause();
+    }
+  });
+  
   socket.on("update announcement", function (htmlAnnouncement) {
     announcementElement.innerHTML = htmlAnnouncement;
   });
@@ -390,7 +502,6 @@ function send() {
   }
 }
 
-// 丰富Markdown语法，主要添加表格及代码块功能
 function showMarkdownHelp() {
   const helpDialog = document.createElement('div');
   helpDialog.className = 'markdown-help';
@@ -444,12 +555,230 @@ function copyCodeToClipboard(button) {
   document.execCommand('copy');
   document.body.removeChild(textArea);
   
-  // Optional: Show a "Copied!" message
   const originalText = button.innerHTML;
   button.textContent = 'Copied!';
   setTimeout(() => {
     button.innerHTML = originalText;
   }, 2000);
+}
+
+function initSyncVideoPlayer() {
+  syncVideoContainer = document.createElement('div');
+  syncVideoContainer.className = 'sync-video-container';
+  syncVideoContainer.innerHTML = `
+    <div class="sync-video-header">
+      <h3 class="sync-video-title">一起看视频</h3>
+      <div class="sync-video-controls">
+        <button onclick="leaveSyncVideo()">退出同步</button>
+      </div>
+    </div>
+    <video class="sync-video-player" controls></video>
+    <div class="resize-handle"></div>
+  `;
+  document.body.appendChild(syncVideoContainer);
+  
+  syncVideoPlayer = syncVideoContainer.querySelector('video');
+
+  syncVideoPlayer.addEventListener('play', onVideoPlay);
+  syncVideoPlayer.addEventListener('pause', onVideoPause);
+  syncVideoPlayer.addEventListener('seeked', onVideoSeeked);
+  
+  // 添加拖拽功能
+  const header = syncVideoContainer.querySelector('.sync-video-header');
+  header.addEventListener('mousedown', startDragging);
+  
+  // 添加缩放功能
+  const resizeHandle = syncVideoContainer.querySelector('.resize-handle');
+  resizeHandle.addEventListener('mousedown', initResize);
+}
+
+function startDragging(e) {
+  isDragging = true;
+  dragStartX = e.clientX;
+  dragStartY = e.clientY;
+  initialX = syncVideoContainer.offsetLeft;
+  initialY = syncVideoContainer.offsetTop;
+  
+  document.addEventListener('mousemove', drag);
+  document.addEventListener('mouseup', stopDragging);
+}
+
+function drag(e) {
+  if (!isDragging) return;
+  
+  e.preventDefault();
+  const dx = e.clientX - dragStartX;
+  const dy = e.clientY - dragStartY;
+  
+  syncVideoContainer.style.left = `${initialX + dx}px`;
+  syncVideoContainer.style.top = `${initialY + dy}px`;
+}
+
+
+function stopDragging() {
+  isDragging = false;
+  document.removeEventListener('mousemove', drag);
+  document.removeEventListener('mouseup', stopDragging);
+}
+
+function initResize(e) {
+  isResizing = true;
+  resizeStartX = e.clientX;
+  resizeStartY = e.clientY;
+  initialWidth = syncVideoContainer.offsetWidth;
+  initialHeight = syncVideoContainer.offsetHeight;
+  
+  document.addEventListener('mousemove', resize);
+  document.addEventListener('mouseup', stopResizing);
+}
+
+function resize(e) {
+  if (!isResizing) return;
+  
+  e.preventDefault();
+  const dx = e.clientX - resizeStartX;
+  const dy = e.clientY - resizeStartY;
+  
+  const newWidth = Math.max(320, initialWidth + dx);
+  const newHeight = Math.max(240, initialHeight + dy);
+  
+  syncVideoContainer.style.width = `${newWidth}px`;
+  syncVideoContainer.style.height = `${newHeight}px`;
+}
+
+function stopResizing() {
+  isResizing = false;
+  document.removeEventListener('mousemove', resize);
+  document.removeEventListener('mouseup', stopResizing);
+}
+
+function startSyncVideo(videoUrl) {
+  if (!isSpecialRoom(roomID)) return;
+  
+  if (!syncVideoContainer) {
+    initSyncVideoPlayer();
+  }
+  
+  currentSyncVideoId = Date.now().toString();
+  socket.emit('start_sync_video', {
+    videoId: currentSyncVideoId,
+    url: videoUrl,
+    roomID
+  });
+  
+  showSyncPlayer(videoUrl);
+}
+
+function showSyncPlayer(videoUrl) {
+  syncVideoContainer.style.display = 'block';
+  syncVideoPlayer.src = videoUrl;
+  syncVideoPlayer.load();
+}
+
+function hideSyncPlayer() {
+  syncVideoContainer.style.display = 'none';
+  syncVideoPlayer.pause();
+  syncVideoPlayer.src = '';
+}
+
+function leaveSyncVideo() {
+  if (currentSyncVideoId) {
+    socket.emit('leave_sync_video', {
+      videoId: currentSyncVideoId,
+      roomID
+    });
+    currentSyncVideoId = null;
+    syncVideoContainer.style.display = 'none';
+    syncVideoPlayer.pause();
+    syncVideoPlayer.src = '';
+  }
+}
+
+function showSyncInvitation(data) {
+  const invitation = document.createElement('div');
+  invitation.className = 'sync-invitation';
+  invitation.innerHTML = `
+    <p>${data.username} 邀请你加入视频同步播放</p>
+    <div class="sync-invitation-buttons">
+      <button class="accept-sync" onclick="acceptSync('${data.videoId}', '${data.url}')">接受</button>
+      <button class="decline-sync" onclick="declineSync()">拒绝</button>
+    </div>
+  `;
+  document.body.appendChild(invitation);
+  
+  setTimeout(() => {
+    if (invitation.parentNode) {
+      invitation.parentNode.removeChild(invitation);
+    }
+  }, 10000);
+}
+
+function acceptSync(videoId, url) {
+  if (!syncVideoContainer) {
+    initSyncVideoPlayer();
+  }
+  
+  currentSyncVideoId = videoId;
+  showSyncPlayer(url);
+  socket.emit('sync_video_accepted', { videoId, roomID });  
+  socket.emit('sync_video_join', {
+    videoId: currentSyncVideoId,
+    roomID
+  });
+  
+  const invitation = document.querySelector('.sync-invitation');
+  if (invitation) {
+    invitation.remove();
+  }
+}
+
+function declineSync() {
+  const invitation = document.querySelector('.sync-invitation');
+  if (invitation) {
+    const videoId = invitation.getAttribute('data-video-id');
+    socket.emit('sync_video_declined', {
+      videoId,
+      roomID
+    });
+    invitation.remove();
+  }
+}
+
+function isSpecialRoom(roomID) { // Special roomID
+  return ["MakeLove", "MyLove", "Tech", "Science"].includes(roomID);
+}
+
+function onVideoPlay() {
+  if (currentSyncVideoId) {
+    socket.emit('sync_video_control', {
+      type: 'play',
+      time: syncVideoPlayer.currentTime,
+      videoId: currentSyncVideoId,
+      roomID
+    });
+  }
+}
+
+function onVideoPause() {
+  if (currentSyncVideoId) {
+    socket.emit('sync_video_control', {
+      type: 'pause',
+      time: syncVideoPlayer.currentTime,
+      videoId: currentSyncVideoId,
+      roomID
+    });
+  }
+}
+
+function onVideoSeeked() {
+  if (currentSyncVideoId && !syncVideoPlayer.seeking) {
+    socket.emit('sync_video_control', {
+      type: 'seek',
+      time: syncVideoPlayer.currentTime,
+      videoId: currentSyncVideoId,
+      roomID
+    });
+  }
 }
 
 window.onload = function () {
@@ -459,10 +788,12 @@ window.onload = function () {
   announcementElement = document.getElementById("announcement"); 
   initSocket();
   register();
+  initSyncVideoPlayer();
+  
   inputElement.addEventListener("keydown", function (e) {
 	if (e.key === "Enter") {
-	  if (e.shiftKey) { // Shift + Enter for new line		 
-		  return;
+	  if (e.shiftKey) {	 
+		return;
 	  }
 	  e.preventDefault();
 	  send();
