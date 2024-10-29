@@ -208,7 +208,7 @@ function printMessage(content, sender = "Admin", type = "TEXT", timestamp = new 
           <div class="nickname">${formattedSender}</div>
           <div class="message-box">
           <video controls><source src="${content}"></video>
-          ${isSpecialRoom(roomID) ? `<button onclick="startSyncVideo('${content}')">发起同步播放</button>` : ''}
+          <button onclick="startSyncVideo('${content}')">发起同步播放</button>
           </div>
         </div>`;
         break;
@@ -653,7 +653,7 @@ function stopResizing() {
 }
 
 function startSyncVideo(videoUrl) {
-  if (!isSpecialRoom(roomID)) return;
+  // if (!isSpecialRoom(roomID)) return;
   
   if (!syncVideoContainer) {
     initSyncVideoPlayer();
@@ -744,9 +744,11 @@ function declineSync() {
   }
 }
 
+/*
 function isSpecialRoom(roomID) { // Special roomID
   return ["MyLove", "Tech", "Sci"].includes(roomID);
 }
+*/
 
 function onVideoPlay() {
   if (currentSyncVideoId) {

@@ -184,7 +184,7 @@ io.sockets.on("connection", function (socket) {
   
     // 新增：视频同步播放功能
   socket.on("start_sync_video", function(data) {
-    if (!isSpecialRoom(data.roomID)) return;
+    // if (!isSpecialRoom(data.roomID)) return;
     
     const room = getRoom(data.roomID);
     const user = room.users.get(socket.id);
@@ -205,7 +205,7 @@ io.sockets.on("connection", function (socket) {
   });
 
   socket.on('sync_video_join', function(data) {
-    if (!isSpecialRoom(data.roomID)) return;
+    // if (!isSpecialRoom(data.roomID)) return;
     const room = getRoom(data.roomID);
     
     if (room.currentSyncVideo && room.currentSyncVideo.videoId === data.videoId) {
@@ -217,7 +217,7 @@ io.sockets.on("connection", function (socket) {
   });
 
   socket.on('sync_video_state', function(data) {
-    if (!isSpecialRoom(data.roomID)) return;
+    // if (!isSpecialRoom(data.roomID)) return;
     const room = getRoom(data.roomID);
     
     if (room.currentSyncVideo && room.currentSyncVideo.videoId === data.videoId) {
@@ -230,7 +230,7 @@ io.sockets.on("connection", function (socket) {
   });
 
   socket.on('sync_video_control', function(data) {
-    if (!isSpecialRoom(data.roomID)) return;
+    // if (!isSpecialRoom(data.roomID)) return;
     const room = getRoom(data.roomID);
     
     if (room.currentSyncVideo && room.currentSyncVideo.videoId === data.videoId) {
@@ -243,7 +243,7 @@ io.sockets.on("connection", function (socket) {
   });  
 
   socket.on('sync_video_accepted', function(data) {
-    if (!isSpecialRoom(data.roomID)) return;
+    // if (!isSpecialRoom(data.roomID)) return;
     const room = getRoom(data.roomID);
     const user = room.users.get(socket.id);
 
@@ -264,7 +264,7 @@ io.sockets.on("connection", function (socket) {
   });
   
   socket.on('sync_video_declined', function(data) {
-    if (!isSpecialRoom(data.roomID)) return;
+    // if (!isSpecialRoom(data.roomID)) return;
     const room = getRoom(data.roomID);
     const user = room.users.get(socket.id);
   
@@ -277,7 +277,7 @@ io.sockets.on("connection", function (socket) {
   });
 
   socket.on('leave_sync_video', function(data) {
-    if (!isSpecialRoom(data.roomID)) return;
+    // if (!isSpecialRoom(data.roomID)) return;
     const room = getRoom(data.roomID);
     const user = room.users.get(socket.id);
     
@@ -298,7 +298,6 @@ io.sockets.on("connection", function (socket) {
     });
   });
 
-  
   socket.on("update announcement", function (newAnnouncement) {
     let roomID = userID2roomID.get(socket.id);
     if (roomID) {
@@ -312,7 +311,7 @@ io.sockets.on("connection", function (socket) {
         io.to(roomID).emit("update announcement", htmlAnnouncement);
       } else {
         socket.emit("message", {
-          content: "只有管理员可以更新公告!",
+          content: "只有管理员可以更新公告！",
           sender: "Admin",
           type: "TEXT",
           timestamp: new Date().toISOString()
