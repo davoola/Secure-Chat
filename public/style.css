@@ -332,7 +332,7 @@ body {
 
 .panel {
     width: 100%;
-    height: 5em;
+    height: 10em;
     font-weight: bold;
     display: flex;
     margin-top: 8px;
@@ -662,41 +662,34 @@ table th[align="right"] {
 
 .sync-video-container {
   position: fixed;
-  top: 5%;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  background: rgba(112, 128, 144, 0.9);
+  transform: translate(-50%, -50%);
+  background: rgba(32, 32, 32, 0.95);
   border-radius: 8px;
-  padding: 10px;
+  padding: 15px;
   z-index: 1000;
-  resize: both;
-  overflow: hidden;
-  width: 960px;
-  height: 640px;
-  min-width: 320px;
-  min-height: 240px;
-  max-width: 90vw;
-  max-height: 80vh;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 800px;
+  height: 600px;
   display: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .sync-video-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px;
-  cursor: move;
-  background: rgba(0, 0, 0, 0.7);
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
   border-radius: 4px;
   margin-bottom: 10px;
+  cursor: move;
 }
 
 .sync-video-title {
   color: white;
-  font-size: 14px;
-  margin: 0;
-  padding: 0;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 .sync-video-controls {
@@ -708,10 +701,10 @@ table th[align="right"] {
   background: transparent;
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 2px 8px;
+  padding: 5px 12px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 12px;
+  transition: all 0.3s ease;
 }
 
 .sync-video-controls button:hover {
@@ -720,34 +713,37 @@ table th[align="right"] {
 
 .sync-video-player {
   width: 100%;
-  height: calc(100% - 40px);
+  height: calc(100% - 120px);
+  background: #000;
   border-radius: 4px;
-  
+  margin-bottom: 10px;
 }
 
 .sync-invitation {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(32, 32, 32, 0.95);
   color: white;
-  padding: 15px;
+  padding: 20px;
   border-radius: 8px;
   z-index: 1001;
-  display: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   animation: slideIn 0.3s ease-out;
 }
 
 .sync-invitation-buttons {
   display: flex;
   gap: 10px;
-  margin-top: 10px;
+  margin-top: 15px;
 }
 
 .sync-invitation-buttons button {
-  padding: 5px 15px;
+  padding: 8px 20px;
   border-radius: 4px;
   cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
 }
 
 .accept-sync {
@@ -755,9 +751,17 @@ table th[align="right"] {
   color: white;
 }
 
+.accept-sync:hover {
+  background: #45a049;
+}
+
 .decline-sync {
   background: #f44336;
   color: white;
+}
+
+.decline-sync:hover {
+  background: #da190b;
 }
 
 @keyframes slideIn {
@@ -798,4 +802,28 @@ table th[align="right"] {
   10% { opacity: 1; transform: translateY(0); }
   90% { opacity: 1; transform: translateY(0); }
   100% { opacity: 0; transform: translateY(-20px); }
+}
+
+.video-Url-title {
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  margin-left: 15px;
+  font-family: STKaiti, sans-serif;
+}
+
+.video-Url-box {
+  margin: 0 10px;
+  padding: 4px;
+  width: 350px;
+  font-size: 11px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #F8F8F8;
+}
+
+.video-Url-box:focus {
+  outline: none;
+  border-color: #66afe9;
+  box-shadow: 0 0 5px rgba(102, 175, 233, 0.5);  
 }

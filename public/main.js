@@ -208,7 +208,7 @@ function printMessage(content, sender = "Admin", type = "TEXT", timestamp = new 
           <div class="nickname">${formattedSender}</div>
           <div class="message-box">
           <video controls><source src="${content}"></video>
-          <button onclick="startSyncVideo('${content}')">发起同步播放</button>
+          <button onclick="startSyncVideo('${content}')">同步播放</button>
           </div>
         </div>`;
         break;
@@ -562,22 +562,20 @@ function copyCodeToClipboard(button) {
   }, 2000);
 }
 
-function initSyncVideoPlayer() {
-  syncVideoContainer = document.createElement('div');
-  syncVideoContainer.className = 'sync-video-container';
-  syncVideoContainer.innerHTML = `
-    <div class="sync-video-header">
-      <h3 class="sync-video-title">一起看视频</h3>
-      <div class="sync-video-controls">
-        <button onclick="leaveSyncVideo()">退出同步</button>
-      </div>
-    </div>
-    <video class="sync-video-player" controls></video>
-    <div class="resize-handle"></div>
-  `;
-  document.body.appendChild(syncVideoContainer);
+function playVideoFromUrl() {//在线视频同步播放
+  const videoUrl = document.getElementById('videoUrl').value.trim();
+  if (!videoUrl) {
+    alert('请输入有效的视频URL地址');
+    return;
+  }
   
-  syncVideoPlayer = syncVideoContainer.querySelector('video');
+  startSyncVideo(videoUrl);
+  document.getElementById('videoUrl').value = '';
+}
+
+function initSyncVideoPlayer() {
+  syncVideoContainer = document.getElementById('syncVideoContainer');
+  syncVideoPlayer = document.getElementById('syncVideo');
 
   syncVideoPlayer.addEventListener('play', onVideoPlay);
   syncVideoPlayer.addEventListener('pause', onVideoPause);
@@ -653,7 +651,6 @@ function stopResizing() {
 }
 
 function startSyncVideo(videoUrl) {
-  // if (!isSpecialRoom(roomID)) return;
   
   if (!syncVideoContainer) {
     initSyncVideoPlayer();
@@ -694,25 +691,6 @@ function leaveSyncVideo() {
   }
 }
 
-function showSyncInvitation(data) {
-  const invitation = document.createElement('div');
-  invitation.className = 'sync-invitation';
-  invitation.innerHTML = `
-    <p>${data.username} 邀请你加入视频同步播放</p>
-    <div class="sync-invitation-buttons">
-      <button class="accept-sync" onclick="acceptSync('${data.videoId}', '${data.url}')">接受</button>
-      <button class="decline-sync" onclick="declineSync()">拒绝</button>
-    </div>
-  `;
-  document.body.appendChild(invitation);
-  
-  setTimeout(() => {
-    if (invitation.parentNode) {
-      invitation.parentNode.removeChild(invitation);
-    }
-  }, 10000);
-}
-
 function acceptSync(videoId, url) {
   if (!syncVideoContainer) {
     initSyncVideoPlayer();
@@ -743,12 +721,6 @@ function declineSync() {
     invitation.remove();
   }
 }
-
-/*
-function isSpecialRoom(roomID) { // Special roomID
-  return ["MyLove", "Tech", "Sci"].includes(roomID);
-}
-*/
 
 function onVideoPlay() {
   if (currentSyncVideoId) {

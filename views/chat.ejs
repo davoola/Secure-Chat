@@ -34,11 +34,26 @@
           <button onclick="clearMessage()">清除屏幕</button>
           <button onclick="changeUsername()">修改昵称</button>
           <button onclick="closeWebsite()">退出</button>
+          <span class="video-Url-title">在线视频:</span>
+          <input type="text" id="videoUrl" class="video-Url-box" placeholder="输入视频URL(已解析过)地址" />
+          <button onclick="playVideoFromUrl()">邀请</button>
         </div>
         <div class="panel">
           <textarea id="input" class="input-box" type="text" placeholder="支持 Markdown 语法，按 Shift + Enter 换行" autocomplete="off" autofocus></textarea>
           <button onclick="send()" class="send-button">发送</button>
         </div>
+    </div>
+
+    <div id="syncVideoContainer" class="sync-video-container">
+        <div class="sync-video-header">
+            <div class="sync-video-title">Watch Together</div>
+            <div class="sync-video-controls">
+                <button onclick="leaveSyncVideo()">退出同步</button>
+                <button onclick="hideSyncPlayer()">关闭</button>
+            </div>
+        </div>
+        <video id="syncVideo" class="sync-video-player" controls></video>
+        <div class="resize-handle"></div>
     </div>
 </body>
 </html>
