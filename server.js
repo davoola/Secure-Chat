@@ -180,11 +180,10 @@ io.sockets.on("connection", function (socket) {
       const chatHistory = loadChatHistory(roomID);
       socket.emit("chat history", chatHistory);
     }
-  });  
+  });
   
     // 新增：视频同步播放功能
   socket.on("start_sync_video", function(data) {
-    
     const room = getRoom(data.roomID);
     const user = room.users.get(socket.id);
     
@@ -304,7 +303,7 @@ io.sockets.on("connection", function (socket) {
         io.to(roomID).emit("update announcement", htmlAnnouncement);
       } else {
         socket.emit("message", {
-          content: "只有管理员可以更新公告！",
+          content: "只有管理员可以更新公告!",
           sender: "Admin",
           type: "TEXT",
           timestamp: new Date().toISOString()
@@ -350,6 +349,26 @@ io.sockets.on("connection", function (socket) {
       if (data.content === undefined) return;
       if (data.type === undefined) data.type = "TEXT";
       let user = room.users.get(socket.id);
+      let kickMessage = undefined;
+      if (user.isAdmin) {
+        if (data.content.startsWith("kick")) {
+          let kickedUser = data.content.substring(4);
+          kickedUser = kickedUser.trim();
+          for (let [id, user] of room.users.entries()) {
+            if (user.username === kickedUser) {
+              room.users.delete(id);
+              room.usernameSet.delete(user.username);
+              kickMessage = {
+                content: `${user.username} 已被踢出聊天室!`,
+                sender: "Admin",
+                type: "TEXT",
+                timestamp: new Date().toISOString()
+              };
+              break;
+            }
+          }
+        }
+      }
       if (user.username === undefined || user.username === "") {
         user.username = "Anonymous";
       }
@@ -359,12 +378,13 @@ io.sockets.on("connection", function (socket) {
         data.content = md2html(data.content);
       }
       io.to(roomID).emit("message", data);
+      if (kickMessage) io.to(roomID).emit("message", kickMessage);
       if (isSpecialRoom(roomID)) {
         saveChatHistory(roomID, data);
       }
     } else {
       let data = {
-        content: `登录已过期，请刷新页面或点击[修改昵称]!`,
+        content: `登录已过期，请刷新页面或返回首页!`,
         sender: "Admin",
         type: "TEXT",
         timestamp: new Date().toISOString()

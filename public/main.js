@@ -261,7 +261,7 @@ function initSocket() {
     invitation.setAttribute('data-video-id', data.videoId);
     invitation.style.display = 'block'; 
     invitation.innerHTML = `
-      <p>${data.username} 邀请你加入视频同步播放</p>
+      <p>${data.username} 邀请您同步观看视频</p>
       <div class="sync-invitation-buttons">
         <button class="accept-sync" onclick="acceptSync('${data.videoId}', '${data.url}')">接受</button>
         <button class="decline-sync" onclick="declineSync()">拒绝</button>
@@ -279,15 +279,15 @@ function initSocket() {
   socket.on('sync_video_accepted', function(data) {
     const message = document.createElement('div');
     message.className = 'sync-notification';
-    message.textContent = `${data.username} 接受了视频同步邀请`;
+    message.textContent = `${data.username} 接受了同步观看视频`;
     document.body.appendChild(message);
 
     setTimeout(() => {
-       if (message.parentNode) {
-		message.parentNode.removeChild(message);
-       }
+      if (message.parentNode) {
+        message.parentNode.removeChild(message);
+      }
     }, 3000);
-  });  
+  }); 
 
   socket.on('sync_video_control', function(data) {
     if (!currentSyncVideoId || currentSyncVideoId !== data.videoId) return;  
@@ -325,9 +325,9 @@ function initSocket() {
   socket.on('sync_video_declined', function(data) {
     const message = document.createElement('div');
     message.className = 'sync-notification';
-    message.textContent = `${data.username} 拒绝了同步播放邀请`;
+    message.textContent = `${data.username} 拒绝了同步观看视频`;
     document.body.appendChild(message);
-  
+
     setTimeout(() => {
       if (message.parentNode) {
         message.parentNode.removeChild(message);

@@ -277,6 +277,78 @@ body {
   background-color: rgba(0, 0, 0, 0.8);
 }
 
+/*  Style for tool-bar */
+
+.controls-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 10px;
+}
+
+.user-row {
+    display: inline-block;
+    margin-top: 8px;
+}
+
+.user-list {
+    height: 2em;
+    font-weight: normal;
+    font-size: 13px;
+    vertical-align: middle;
+    align-items: center;
+    color: #F5F5F5;
+}
+
+.online-user {
+    margin-left: 5px;
+    vertical-align: middle;    
+    font-size: 15px;  
+}
+
+.online-user span {
+    margin-right: 13px;
+}
+
+.video-row {
+    display: inline-block;
+    margin-top: 8px;
+}
+
+.video-Url-title {
+    height: 2em;
+    font-weight: normal;
+    font-size: 13px;
+    vertical-align: middle;
+    align-items: center;
+    color: #F5F5F5;
+}
+
+.video-Url-box {
+    margin: 0 2px;
+    padding: 4px;
+    width: 28%;
+    font-size: 11px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #F8F8F8;
+}
+
+.video-Url-box:focus {
+    outline: none;
+    border-color: #66afe9;
+    box-shadow: 0 0 5px rgba(102, 175, 233, 0.5);  
+}
+
+.tool-bar {
+    margin-top: 8px;
+    height: 2em;
+    display: flex;
+        font-weight: bold;
+    align-items: center;
+}
+
 .progress-bar {
   height: 20px;
   background-color: #0000CD;
@@ -347,36 +419,6 @@ body {
 	background: #20201d;
     color: #E8E8E8;
     font-family: Consolas, "Microsoft YaHei", monospace;
-}
-
-.tool-bar {
-    margin-top: 8px;
-    height: 2em;
-    display: flex;
-	font-weight: bold;
-    align-items: center;
-}
-.show-user {
-	display: inline-block; 
-}
-.user-list {
-    margin-top: 8px;
-    height: 2em;
-	font-weight: normal;
-	font-size:13px;
-	vertical-align:middle;
-    align-items: center;
-	color: #F5F5F5;
-}
-
-.online-user {
-    margin-left: 5px;
-	vertical-align:middle;    
-    font-size: 15px;  
-}
-
-.online-user span {
-    margin-right: 13px;
 }
 
 button {
@@ -662,8 +704,6 @@ table th[align="right"] {
 
 .sync-video-container {
   position: fixed;
-  top: 50%;
-  left: 50%;
   transform: translate(-50%, -50%);
   background: rgba(32, 32, 32, 0.95);
   border-radius: 8px;
@@ -673,6 +713,24 @@ table th[align="right"] {
   height: 600px;
   display: none;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+@media screen and (min-width: 769px) {
+  .sync-video-container {
+	top: 35%;
+	left: 50%;
+    width: 800px;
+    height: 600px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .sync-video-container {
+	top: 25%;
+	left: 50%;
+    width: 95vw;
+    height: calc(95vw * 0.75);
+  }
 }
 
 .sync-video-header {
@@ -688,8 +746,9 @@ table th[align="right"] {
 
 .sync-video-title {
   color: white;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: bold;
+  font-family: Consolas, "WenQuanYi Micro Hei", monospace;
 }
 
 .sync-video-controls {
@@ -713,7 +772,7 @@ table th[align="right"] {
 
 .sync-video-player {
   width: 100%;
-  height: calc(100% - 120px);
+  height: calc(100% - 60px);
   background: #000;
   border-radius: 4px;
   margin-bottom: 10px;
@@ -721,8 +780,9 @@ table th[align="right"] {
 
 .sync-invitation {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
   background: rgba(32, 32, 32, 0.95);
   color: white;
   padding: 20px;
@@ -730,15 +790,21 @@ table th[align="right"] {
   z-index: 1001;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   animation: slideIn 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .sync-invitation-buttons {
   display: flex;
-  gap: 10px;
+  justify-content: center;
+  width: 100%;
   margin-top: 15px;
 }
 
 .sync-invitation-buttons button {
+  flex: 1;
+  max-width: 45%;
   padding: 8px 20px;
   border-radius: 4px;
   cursor: pointer;
@@ -747,6 +813,7 @@ table th[align="right"] {
 }
 
 .accept-sync {
+  margin-right: auto;
   background: #4CAF50;
   color: white;
 }
@@ -756,6 +823,7 @@ table th[align="right"] {
 }
 
 .decline-sync {
+  margin-left: auto;
   background: #f44336;
   color: white;
 }
@@ -786,9 +854,9 @@ table th[align="right"] {
 }
 
 .sync-notification {
+  margin-right: auto;	
   position: fixed;
   bottom: 20px;
-  right: 20px;
   background: rgba(0, 0, 0, 0.8);
   color: white;
   padding: 10px 20px;
@@ -802,28 +870,4 @@ table th[align="right"] {
   10% { opacity: 1; transform: translateY(0); }
   90% { opacity: 1; transform: translateY(0); }
   100% { opacity: 0; transform: translateY(-20px); }
-}
-
-.video-Url-title {
-  color: white;
-  font-size: 15px;
-  font-weight: bold;
-  margin-left: 15px;
-  font-family: STKaiti, sans-serif;
-}
-
-.video-Url-box {
-  margin: 0 10px;
-  padding: 4px;
-  width: 350px;
-  font-size: 11px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background-color: #F8F8F8;
-}
-
-.video-Url-box:focus {
-  outline: none;
-  border-color: #66afe9;
-  box-shadow: 0 0 5px rgba(102, 175, 233, 0.5);  
 }
