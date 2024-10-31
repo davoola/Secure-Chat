@@ -74,11 +74,14 @@ function getRoom(roomID) {
     room = {
       users: new Map(),
       usernameSet: new Set(),
-      password: getSpecialRoomPassword(roomID),
-      announcement: loadSpecialRoomAnnouncement(roomID),
+      password: null,
+      announcement: isSpecialRoom(roomID) ? loadSpecialRoomAnnouncement(roomID) : null,
       currentSyncVideo: null, 
       syncParticipants: new Set()
     };
+	if (isSpecialRoom(roomID)) {
+      room.password = getSpecialRoomPassword(roomID);
+    }
     rooms.set(roomID, room);
   }
   return room;
@@ -134,8 +137,9 @@ function isSpecialRoom(roomID) {
 io.sockets.on("connection", function (socket) {
   socket.on("register", function (username, roomID = "/", password = "") {
     let room = getRoom(roomID);
+    username = username.trim();
 
-    if (room.usernameSet.has(username)) {
+    if (room.usernameSet.has(username) || username === "Admin") {
       socket.emit("conflict username");
       return;
     }
@@ -148,6 +152,18 @@ io.sockets.on("connection", function (socket) {
         }
       }
       if (password !== room.password) {
+        socket.emit("invalid password");
+        return;
+      }
+    }
+    else {
+      let isFirstPerson = room.users.size === 0;
+	  
+      if (isFirstPerson && password !== "") {
+        room.password = password;
+      }
+	  
+      if (room.password && password !== room.password) {
         socket.emit("invalid password");
         return;
       }

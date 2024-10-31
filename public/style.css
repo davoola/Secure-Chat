@@ -717,10 +717,10 @@ table th[align="right"] {
 
 @media screen and (min-width: 769px) {
   .sync-video-container {
-	top: 35%;
+	top: 40%;
 	left: 50%;
     width: 800px;
-    height: 600px;
+    height: 500px;
   }
 }
 

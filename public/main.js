@@ -410,7 +410,7 @@ function initSocket() {
 function closeWebsite() {
   if (confirm('确定要退出吗？')) {
     if (navigator.userAgent.indexOf("Firefox") != -1 || navigator.userAgent.indexOf("Chrome") != -1) {
-      window.location.href = "about:blank";
+      window.location.href = "/";
       window.close();
     } else {
       window.opener = null;
