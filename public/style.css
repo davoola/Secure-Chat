@@ -195,6 +195,12 @@ body {
   border-radius: 3px;
 }
 
+@media screen and (max-width: 768px) {
+  .announcement {
+    display: none;
+  }
+}
+
 /* Styles for Picture display effect */
 .lightbox {
   display: none;
