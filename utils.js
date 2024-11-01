@@ -1,6 +1,23 @@
 const { marked } = require('marked');
 const sanitizeHtml = require('sanitize-html');
 const hljs = require('highlight.js');
+const { markedHighlight } = require('marked-highlight');
+
+// Configure marked with markedHighlight
+marked.use(markedHighlight({
+  langPrefix: 'hljs language-',
+  highlight(code, lang) {
+    try {
+      if (lang && hljs.getLanguage(lang)) {
+        return hljs.highlight(code, { language: lang }).value;
+      }
+      return hljs.highlightAuto(code).value;
+    } catch (e) {
+      console.error('Highlight error:', e);
+      return code;
+    }
+  }
+}));
 
 marked.setOptions({
   gfm: true,
@@ -11,19 +28,7 @@ marked.setOptions({
   pedantic: false,
   sanitize: false,
   smartLists: true,
-  smartypants: true, 
-  checkbox: true,
-  highlight: function(code, lang) {
-    try {
-      if (lang) {
-        return hljs.highlight(code, { language: lang }).value;
-      }
-      return hljs.highlightAuto(code).value;
-    } catch (e) {
-      console.error('Highlight error:', e);
-      return code;
-    }
-  }
+  checkbox: true
 });
 
 const sanitizeOptions = {
@@ -52,8 +57,8 @@ const sanitizeOptions = {
       'text-align': [/^left$/, /^center$/, /^right$/]
     },
     'span': {
-      'color': [/^#(0x)?[0-9a-f]+$/i, /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/],
-      'background-color': [/^#(0x)?[0-9a-f]+$/i, /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/]
+      'color': [/^#(0x)?[0-9a-f]+$/i, /^rgb$$\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*$$$/],
+      'background-color': [/^#(0x)?[0-9a-f]+$/i, /^rgb$$\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*$$$/]
     }
   },
   selfClosing: ['img', 'br', 'hr', 'input'],
