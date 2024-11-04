@@ -759,7 +759,8 @@ window.onload = function () {
   dialogElement = document.getElementById("dialog");
   inputElement = document.getElementById("input");
   fileInputElement = document.getElementById("fileInput");
-  announcementElement = document.getElementById("announcement"); 
+  announcementElement = document.getElementById("announcement");
+  videoUrlElement = document.getElementById('videoUrl');
   initSocket();
   register();
   initSyncVideoPlayer();
@@ -771,6 +772,13 @@ window.onload = function () {
 	  }
 	  e.preventDefault();
 	  send();
+	}
+  });
+  
+  videoUrlElement.addEventListener("keydown", function (e) {
+	if (e.key === "Enter") {	  
+	  e.preventDefault();
+	  playVideoFromUrl();
 	}
   });
 };

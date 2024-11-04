@@ -27,20 +27,22 @@
             <span class="user-list">在线用户[<span id="userCount">0</span>] -</span> 
             <span id="userList" class="online-user"></span>
         </div>
-        <div class="video-row">
-            <span class="video-Url-title">在线视频</span> 
-            <input type="text" id="videoUrl" class="video-Url-box" placeholder="输入视频URL(已解析过)地址" /> 
-            <button onclick="playVideoFromUrl()">邀请</button>
+        <div class="tool-bar-video-row-container">
+            <div class="tool-bar">
+                <input id="fileInput" type="file" style="display: none" onchange="uploadFile()" /> 
+                <button onclick="document.getElementById('fileInput').click()">上传文件</button> 
+                <button onclick="showMarkdownHelp()">语法说明</button>			
+                <button onclick="clearMessage()">清除屏幕</button> 
+                <button onclick="changeUsername()">修改昵称</button> 
+                <button onclick="closeWebsite()">退出</button> 
+            </div>
+            <div class="video-row">
+                <span class="video-Url-title">在线视频</span> 
+                <input type="text" id="videoUrl" class="video-Url-box" placeholder="输入视频URL(已解析过)地址" /> 
+                <button onclick="playVideoFromUrl()">邀请</button>
+            </div>
         </div>
-        <div class="tool-bar">
-            <input id="fileInput" type="file" style="display: none" onchange="uploadFile()" /> 
-            <button onclick="document.getElementById('fileInput').click()">上传文件</button> 
-            <button onclick="showMarkdownHelp()">语法说明</button>			
-			<button onclick="clearMessage()">清除屏幕</button> 
-			<button onclick="changeUsername()">修改昵称</button> 
-			<button onclick="closeWebsite()">退出</button> 
-		</div>
-	</div>
+    </div>
     <div class="panel">
         <textarea id="input" class="input-box" type="text" placeholder="支持 Markdown 语法，按 Shift + Enter 换行" autocomplete="off" autofocus></textarea>
         <button onclick="send()" class="send-button">发送</button>

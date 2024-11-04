@@ -3,7 +3,6 @@ const sanitizeHtml = require('sanitize-html');
 const hljs = require('highlight.js');
 const { markedHighlight } = require('marked-highlight');
 
-// Configure marked with markedHighlight
 marked.use(markedHighlight({
   langPrefix: 'hljs language-',
   highlight(code, lang) {
