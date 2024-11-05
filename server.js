@@ -76,8 +76,10 @@ function getRoom(roomID) {
       usernameSet: new Set(),
       password: null,
       announcement: isSpecialRoom(roomID) ? loadSpecialRoomAnnouncement(roomID) : null,
-      currentSyncVideo: null, 
-      syncParticipants: new Set()
+      currentSyncVideo: null,
+      syncParticipants: new Set(),
+      iptvHost: null,
+      iptvParticipants: new Set()
     };
 	if (isSpecialRoom(roomID)) {
       room.password = getSpecialRoomPassword(roomID);
@@ -306,6 +308,64 @@ io.sockets.on("connection", function (socket) {
     });
   });
 
+  // Add new IPTV socket handlers
+  socket.on('iptv_invitation', function(data) {
+    const room = getRoom(data.roomID);
+    const user = room.users.get(socket.id);
+    
+    if (!room.iptvHost) {
+      room.iptvHost = socket.id;
+      room.iptvParticipants.clear();
+      room.iptvParticipants.add(socket.id);
+      
+      socket.to(data.roomID).emit('iptv_invitation', {
+        url: data.url,
+        username: user.username
+      });
+    }
+  });
+
+  socket.on('iptv_accepted', function(data) {
+    const room = getRoom(data.roomID);
+    const user = room.users.get(socket.id);
+    
+    if (room.iptvHost) {
+      room.iptvParticipants.add(socket.id);
+      io.to(data.roomID).emit('iptv_accepted', {
+        username: user.username
+      });
+    }
+  });
+
+  socket.on('iptv_declined', function(data) {
+    const room = getRoom(data.roomID);
+    const user = room.users.get(socket.id);
+    
+    if (room.iptvHost) {
+      io.to(room.iptvHost).emit('iptv_declined', {
+		  username: user.username
+	  });
+    }
+  });
+
+  socket.on('iptv_ended', function(data) {
+    const room = getRoom(data.roomID);
+    
+    if (room.iptvHost === socket.id) {
+      const user = room.users.get(socket.id);
+      room.iptvHost = null;
+      room.iptvParticipants.clear();
+      
+      socket.to(data.roomID).emit('iptv_ended');
+      io.to(data.roomID).emit('message', {
+        content: `${user.username} 结束了IPTV直播`,
+        sender: "Admin",
+        type: "TEXT",
+        timestamp: new Date().toISOString()
+      });
+    }
+  }); //end iptv
+
   socket.on("update announcement", function (newAnnouncement) {
     let roomID = userID2roomID.get(socket.id);
     if (roomID) {
@@ -427,6 +487,14 @@ io.sockets.on("connection", function (socket) {
           room.currentSyncVideo = null;
           room.syncParticipants.clear();
         }
+
+        // Handle IPTV host disconnection
+        if (room.iptvHost === socket.id) {
+          room.iptvHost = null;
+          room.iptvParticipants.clear();
+          socket.to(roomID).emit('iptv_ended');
+        }
+		
         if (room.users.size === 0) {
           rooms.delete(roomID);
         }

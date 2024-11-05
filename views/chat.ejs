@@ -6,8 +6,10 @@
     <title>聊天室 - <%= roomID %></title>
     <meta name="description" content="Secure Chat Application"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+    <link href="https://vjs.zencdn.net/8.3.0/video-js.css" rel="stylesheet" />
     <link rel="stylesheet" href="/style.css"/>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://vjs.zencdn.net/8.3.0/video.min.js"></script>
     <script src="/main.js"></script>
 </head>
 <body>
@@ -39,7 +41,7 @@
             <div class="video-row">
                 <span class="video-Url-title">在线视频</span> 
                 <input type="text" id="videoUrl" class="video-Url-box" placeholder="输入视频URL(已解析过)地址" /> 
-                <button onclick="playVideoFromUrl()">邀请</button>
+                <button onclick="playVideoFromUrl()">同步观看</button>
             </div>
         </div>
     </div>
@@ -57,6 +59,18 @@
             </div>
         </div>
         <video id="syncVideo" class="sync-video-player" controls></video>
+        <div class="resize-handle"></div>
+    </div>
+    <div id="iptvPlayerContainer" class="iptv-player-container">
+        <div class="iptv-player-header">
+            <div class="iptv-player-title">IPTV Player</div>
+            <div class="iptv-player-controls">
+                <button onclick="hideIptvPlayer()">关闭</button>
+            </div>
+        </div>
+        <video id="iptvPlayer" class="video-js vjs-default-skin" controls>
+            <p class="vjs-no-js">请启用JavaScript以观看直播</p>
+        </video>
         <div class="resize-handle"></div>
     </div>
 </body>

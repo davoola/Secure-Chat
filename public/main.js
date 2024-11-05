@@ -6,7 +6,7 @@ let dialogElement;
 let inputElement;
 let fileInputElement;
 let onlineUsers = new Set();
-let announcementElement; 
+let announcementElement;
 let syncVideoContainer;
 let syncVideoPlayer;
 let currentSyncVideoId = null;
@@ -14,6 +14,9 @@ let isDragging = false;
 let isResizing = false;
 let dragStartX, dragStartY, initialX, initialY;
 let resizeStartX, resizeStartY, initialWidth, initialHeight;
+let iptvPlayer = null;
+let currentIptvUrl = null;
+let isIptvHost = false;
 
 function filename2type(fileName) {
   let extension = fileName.split(".").pop().toLowerCase();
@@ -37,6 +40,7 @@ function filename2type(fileName) {
   let videoFormats = [
     "mp4",
     "webm",
+	"m3u8",
   ];
   if (imageFormats.includes(extension)) {
     return "IMAGE";
@@ -405,6 +409,9 @@ function initSocket() {
       printMessage(message.content, message.sender, message.type, message.timestamp);
     });
   });
+
+  // Initialize IPTV socket events
+  initIptvSocketEvents();
 }
 
 function closeWebsite() {
@@ -569,8 +576,154 @@ function playVideoFromUrl() {//在线视频同步播放
     return;
   }
   
-  startSyncVideo(videoUrl);
+  if (videoUrl.toLowerCase().endsWith('.m3u8')) {
+	playIptvStream(videoUrl);
+  } else {
+    startSyncVideo(videoUrl);
+  }
+  
   document.getElementById('videoUrl').value = '';
+}
+
+function initIptvPlayer() {//IPTV直播源
+  if (!iptvPlayer) {
+    iptvPlayer = videojs('iptvPlayer', {
+      fluid: true,
+      controls: true,
+      autoplay: true,
+      preload: 'auto',
+      html5: {
+        hls: {
+          enableLowInitialPlaylist: true,
+          smoothQualityChange: true,
+          overrideNative: true,
+          withCredentials: true,
+          xhrSetup: function(xhr, url) {
+            // Support IPv6 URLs
+            xhr.setRequestHeader('Accept', 'application/x-mpegURL');
+            xhr.withCredentials = true;
+          }
+        }
+      }
+    });	
+  }
+}
+
+function playIptvStream(url, isInvited = false) {
+  const iptvContainer = document.getElementById('iptvPlayerContainer');
+  
+  if (!iptvPlayer) {
+    initIptvPlayer();
+  }
+  
+  iptvContainer.style.display = 'block';
+  currentIptvUrl = url;
+  isIptvHost = !isInvited;
+  
+  if (!isInvited) {
+    socket.emit('iptv_invitation', {
+      url: url,
+      roomID: roomID
+    });
+  }
+  
+  iptvPlayer.src({
+    src: url,
+    type: 'application/x-mpegURL'
+  });
+  
+  iptvPlayer.play().catch(error => {
+    console.error('播放错误:', error);
+    showNotification('播放失败，请检查直播源是否有效', 'error');
+  });
+}
+
+function hideIptvPlayer() {
+  const iptvContainer = document.getElementById('iptvPlayerContainer');
+  iptvContainer.style.display = 'none';
+  if (iptvPlayer) {
+    iptvPlayer.pause();
+    iptvPlayer.src('');
+    currentIptvUrl = null;
+    
+    if (isIptvHost) {
+      socket.emit('iptv_ended', {
+        roomID: roomID
+      });
+    }
+  }
+}
+
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.className = `sync-notification ${type}`;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.parentNode.removeChild(notification);
+    }
+  }, 3000);
+}
+
+function acceptIptvInvitation(url, username) {
+  const invitation = document.createElement('div');
+  invitation.className = 'sync-invitation';
+  invitation.setAttribute('data-iptv-url', url);
+  invitation.style.display = 'block';
+  invitation.innerHTML = `
+    <p>${username} 邀请您观看IPTV直播</p>
+    <div class="sync-invitation-buttons">
+      <button class="accept-sync" onclick="acceptIptv('${url}')">接受</button>
+      <button class="decline-sync" onclick="declineIptv()">拒绝</button>
+    </div>
+  `;
+  document.body.appendChild(invitation);
+  
+  setTimeout(() => {
+    if (invitation.parentNode) {
+      invitation.parentNode.removeChild(invitation);
+    }
+  }, 10000);
+}
+
+function acceptIptv(url) {
+  playIptvStream(url, true);
+  socket.emit('iptv_accepted', {
+    roomID: roomID
+  });
+  removeInvitation();
+  showNotification('已加入IPTV直播');
+}
+
+function declineIptv() {
+  socket.emit('iptv_declined', {
+    roomID: roomID
+  });
+  removeInvitation();
+}
+
+// Initialize socket events for IPTV
+function initIptvSocketEvents() {
+  socket.on('iptv_invitation', function(data) {
+    acceptIptvInvitation(data.url, data.username);
+  });
+
+  socket.on('iptv_accepted', function(data) {
+    showNotification(`${data.username} 接受了IPTV直播邀请`);
+  });
+
+  socket.on('iptv_declined', function(data) {
+    showNotification(`${data.username} 拒绝了IPTV直播邀请`);
+  });
+
+  socket.on('iptv_ended', function() {
+    if (!isIptvHost && iptvPlayer) {
+      hideIptvPlayer();
+      showNotification('主播结束了IPTV直播');
+    }
+  });
 }
 
 function initSyncVideoPlayer() {
