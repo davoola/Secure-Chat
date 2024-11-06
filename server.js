@@ -25,6 +25,10 @@ app.get("/", (req, res) => {
   }
 });
 
+app.get('/help', (req, res) => {
+    res.render('help', { md2html });
+});
+
 app.use("/", roomRouter);
 
 app.use(function (req, res) {

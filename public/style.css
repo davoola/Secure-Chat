@@ -158,6 +158,37 @@ body {
     margin-bottom: 0.5rem;
 }
 
+/* Styles for Help Page */
+
+.help-content {
+    color: #333;
+    line-height: 1.6;
+}
+
+.help-content h1,
+.help-content h2,
+.help-content h3,
+.help-content h4,
+.help-content h5,
+.help-content h6,
+.help-content p {
+    text-align: left;
+}
+
+.help-content table {
+    color: #eee;
+    background-color: #2d2d2d;
+}
+
+.help-content th {
+    background-color: #363636;
+    color: #fff;
+}
+
+.help-content tr:nth-child(even) {
+    background-color: #333;
+}
+
 /* Styles for announcement */
 
 .announcement {
@@ -215,17 +246,19 @@ body {
 }
 
 .lightbox-content {
-  display: block;
-  margin: auto;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 80%;
-  max-width: 700px;
-  position: relative;
+  max-width: 800px;
   padding-top: 20px;
 }
 
 .lightbox-image {
   width: 100%;
   height: auto;
+  display: block;
 }
 
 .close-button {
@@ -382,9 +415,9 @@ body {
 }
 
 .video-Url-box {
-    margin: 0 2px;
+    margin: 0 1px;
     padding: 4px;
-    width: 38%;
+    width: 33%;
     font-size: 11px;
     border: 1px solid #ccc;
     border-radius: 6px;
@@ -711,48 +744,6 @@ table th[align="right"] {
   margin: 0.5em 0;
   padding-left: 1em;
   color: #999;
-}
-
-/* Markdown help dialog */
-.markdown-help {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #2d2d2d;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
-  max-width: 80%;
-  max-height: 80vh;
-  overflow-y: auto;
-  z-index: 1000;
-}
-
-.markdown-help h3 {
-  margin-top: 0;
-  color: #fff;
-}
-
-.markdown-help table {
-  margin: 1em 0;
-}
-
-.markdown-help code {
-  background-color: #363636;
-  color: #e6e6e6;
-}
-
-.close-help {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  cursor: pointer;
-  color: #fff;
-  font-size: 20px;
-  background: none;
-  border: none;
-  padding: 0;
 }
 
 /* Style for Video Sync Player */

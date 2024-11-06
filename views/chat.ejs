@@ -31,16 +31,16 @@
         </div>
         <div class="tool-bar-video-row-container">
             <div class="tool-bar">
-                <input id="fileInput" type="file" style="display: none" onchange="uploadFile()" /> 
-                <button onclick="document.getElementById('fileInput').click()">上传文件</button> 
-                <button onclick="showMarkdownHelp()">语法说明</button>			
-                <button onclick="clearMessage()">清除屏幕</button> 
-                <button onclick="changeUsername()">修改昵称</button> 
-                <button onclick="closeWebsite()">退出</button> 
+                <input id="fileInput" type="file" style="display: none" onchange="uploadFile()" />
+                <button onclick="document.getElementById('fileInput').click()">上传文件</button>
+                <button onclick="clearMessage()">清除屏幕</button>
+                <button onclick="changeUsername()">修改昵称</button>
+                <button onclick="window.open('/help', '_blank', 'noopener,noreferrer')">使用说明</button>
+                <button onclick="closeWebsite()">退出</button>
             </div>
             <div class="video-row">
-                <span class="video-Url-title">在线视频</span> 
-                <input type="text" id="videoUrl" class="video-Url-box" placeholder="输入视频URL(已解析过)地址" /> 
+                <span class="video-Url-title">在线视频</span>
+                <input type="text" id="videoUrl" class="video-Url-box" placeholder="输入视频地址(支持m3u8)" />
                 <button onclick="playVideoFromUrl()">同步观看</button>
             </div>
         </div>
@@ -54,8 +54,7 @@
         <div class="sync-video-header">
             <div class="sync-video-title">Watch Together</div>
             <div class="sync-video-controls">
-                <button onclick="leaveSyncVideo()">退出同步</button>
-                <button onclick="hideSyncPlayer()">关闭</button>
+                <button onclick="leaveSyncVideo()">关闭</button>
             </div>
         </div>
         <video id="syncVideo" class="sync-video-player" controls></video>
@@ -65,7 +64,7 @@
         <div class="iptv-player-header">
             <div class="iptv-player-title">IPTV Player</div>
             <div class="iptv-player-controls">
-                <button onclick="hideIptvPlayer()">关闭</button>
+                <button onclick="leaveIptvPlayer()">关闭</button>
             </div>
         </div>
         <video id="iptvPlayer" class="video-js vjs-default-skin" controls>

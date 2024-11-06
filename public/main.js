@@ -5,7 +5,6 @@ let roomID = window.location.search.substring(1);
 let dialogElement;
 let inputElement;
 let fileInputElement;
-let onlineUsers = new Set();
 let announcementElement;
 let syncVideoContainer;
 let syncVideoPlayer;
@@ -281,17 +280,12 @@ function initSocket() {
   });
 
   socket.on('sync_video_accepted', function(data) {
-    const message = document.createElement('div');
-    message.className = 'sync-notification';
-    message.textContent = `${data.username} 接受了同步观看视频`;
-    document.body.appendChild(message);
-
-    setTimeout(() => {
-      if (message.parentNode) {
-        message.parentNode.removeChild(message);
-      }
-    }, 3000);
+    showNotification(`${data.username} 接受了同步观看视频`);
   }); 
+
+  socket.on('sync_video_declined', function(data) {
+    showNotification(`${data.username} 拒绝了同步观看视频`);
+  });
 
   socket.on('sync_video_control', function(data) {
     if (!currentSyncVideoId || currentSyncVideoId !== data.videoId) return;  
@@ -326,19 +320,6 @@ function initSocket() {
 	}, 100);
   });
 
-  socket.on('sync_video_declined', function(data) {
-    const message = document.createElement('div');
-    message.className = 'sync-notification';
-    message.textContent = `${data.username} 拒绝了同步观看视频`;
-    document.body.appendChild(message);
-
-    setTimeout(() => {
-      if (message.parentNode) {
-        message.parentNode.removeChild(message);
-      }
-    }, 3000);
-  });
-
   socket.on('sync_video_join', function(data) {
     if (currentSyncVideoId === data.videoId) {
       socket.emit('sync_video_state', {
@@ -357,6 +338,43 @@ function initSocket() {
       syncVideoPlayer.play().catch(console.error);
     } else {
       syncVideoPlayer.pause();
+    }
+  });  
+
+  // 整合IPTV相关的socket事件
+  socket.on('iptv_invitation', function(data) {
+    const invitation = document.createElement('div');
+    invitation.className = 'sync-invitation';
+    invitation.setAttribute('data-iptv-url', data.url);
+    invitation.style.display = 'block';
+    invitation.innerHTML = `
+      <p>${data.username} 邀请您观看IPTV直播</p>
+      <div class="sync-invitation-buttons">
+        <button class="accept-sync" onclick="acceptIptv('${data.url}')">接受</button>
+        <button class="decline-sync" onclick="declineIptv()">拒绝</button>
+      </div>
+    `;
+    document.body.appendChild(invitation);
+    
+    setTimeout(() => {
+      if (invitation.parentNode) {
+        invitation.parentNode.removeChild(invitation);
+      }
+    }, 10000);
+  });
+
+  socket.on('iptv_accepted', function(data) {
+    showNotification(`${data.username} 接受了IPTV直播邀请`);
+  });
+
+  socket.on('iptv_declined', function(data) {
+    showNotification(`${data.username} 拒绝了IPTV直播邀请`);
+  });
+
+  socket.on('iptv_ended', function() {
+    if (!isIptvHost && iptvPlayer) {
+      leaveIptvPlayer();
+      showNotification('主播结束了IPTV直播');
     }
   });
   
@@ -409,22 +427,10 @@ function initSocket() {
       printMessage(message.content, message.sender, message.type, message.timestamp);
     });
   });
-
-  // Initialize IPTV socket events
-  initIptvSocketEvents();
 }
 
 function closeWebsite() {
-  if (confirm('确定要退出吗？')) {
-    if (navigator.userAgent.indexOf("Firefox") != -1 || navigator.userAgent.indexOf("Chrome") != -1) {
-      window.location.href = "/";
-      window.close();
-    } else {
-      window.opener = null;
-      window.open("", "_self");
-      window.close();
-    };
-  }
+  if (confirm('确定要退出吗？')) window.location.href = "/";
 }
 
 function updateUserList(users) {
@@ -509,50 +515,6 @@ function send() {
   }
 }
 
-function showMarkdownHelp() {
-  const helpDialog = document.createElement('div');
-  helpDialog.className = 'markdown-help';
-  helpDialog.innerHTML = `
-    <button class="close-help" onclick="this.parentElement.remove()">&times;</button>
-    <h3>Markdown 语法说明</h3>
-    <table>
-      <tr>
-        <th>效果</th>
-        <th>语法</th>
-      </tr>
-      <tr>
-        <td><strong>粗体</strong></td>
-        <td><code>**粗体** or __粗体__</code></td>
-      </tr>
-      <tr>
-        <td><em>斜体</em></td>
-        <td><code>*斜体* or _斜体_</code></td>
-      </tr>
-      <tr>
-        <td>表格（包含对齐）</td>
-        <td><code>| 左对齐 | 居中对齐 | 右对齐 |<br>|:--- |:---:| ---:|<br>| 内容 | 内容 | 内容 |<br>| 内容 | 内容 | 内容 |</code></td>
-      </tr>
-        <td>代码块</td>
-        <td><code>\`\`\`语言<br>代码内容<br>\`\`\`</code></td>
-      </tr>
-      <tr>
-        <td>链接</td>
-        <td><code>[链接文字](URL)<br><br>注：不支持markdown图片</code></td>
-      </tr>
-      <tr>
-        <td>列表</td>
-        <td><code>- 项目1<br>- 项目2</code></td>
-      </tr>
-      <tr>
-        <td>引用</td>
-        <td><code>> 引用内容</code></td>
-      </tr>
-    </table>
-    <p>支持的代码高亮语言：js, python, java, cpp, html, css 等</p>
-  `;
-  document.body.appendChild(helpDialog);
-}
-
 function copyCodeToClipboard(button) {
   const codeBlock = button.nextElementSibling.querySelector('code');
   const textArea = document.createElement('textarea');
@@ -627,8 +589,11 @@ function playIptvStream(url, isInvited = false) {
     });
   }
   
+  // Ensure IPv6 URLs are properly encoded
+  const encodedUrl = url.replace(/\[/g, '%5B').replace(/\]/g, '%5D');
+  
   iptvPlayer.src({
-    src: url,
+    src: encodedUrl,
     type: 'application/x-mpegURL'
   });
   
@@ -638,7 +603,7 @@ function playIptvStream(url, isInvited = false) {
   });
 }
 
-function hideIptvPlayer() {
+function leaveIptvPlayer() {
   const iptvContainer = document.getElementById('iptvPlayerContainer');
   iptvContainer.style.display = 'none';
   if (iptvPlayer) {
@@ -667,69 +632,34 @@ function showNotification(message, type = 'info') {
   }, 3000);
 }
 
-function acceptIptvInvitation(url, username) {
-  const invitation = document.createElement('div');
-  invitation.className = 'sync-invitation';
-  invitation.setAttribute('data-iptv-url', url);
-  invitation.style.display = 'block';
-  invitation.innerHTML = `
-    <p>${username} 邀请您观看IPTV直播</p>
-    <div class="sync-invitation-buttons">
-      <button class="accept-sync" onclick="acceptIptv('${url}')">接受</button>
-      <button class="decline-sync" onclick="declineIptv()">拒绝</button>
-    </div>
-  `;
-  document.body.appendChild(invitation);
-  
-  setTimeout(() => {
-    if (invitation.parentNode) {
-      invitation.parentNode.removeChild(invitation);
-    }
-  }, 10000);
-}
-
 function acceptIptv(url) {
+  const invitation = document.querySelector('.sync-invitation');
+  if (invitation) {
+    invitation.remove();
+  }
+  
   playIptvStream(url, true);
   socket.emit('iptv_accepted', {
     roomID: roomID
   });
-  removeInvitation();
   showNotification('已加入IPTV直播');
 }
 
 function declineIptv() {
+  const invitation = document.querySelector('.sync-invitation');
+  if (invitation) {
+    invitation.remove();
+  }
+  
   socket.emit('iptv_declined', {
     roomID: roomID
-  });
-  removeInvitation();
-}
-
-// Initialize socket events for IPTV
-function initIptvSocketEvents() {
-  socket.on('iptv_invitation', function(data) {
-    acceptIptvInvitation(data.url, data.username);
-  });
-
-  socket.on('iptv_accepted', function(data) {
-    showNotification(`${data.username} 接受了IPTV直播邀请`);
-  });
-
-  socket.on('iptv_declined', function(data) {
-    showNotification(`${data.username} 拒绝了IPTV直播邀请`);
-  });
-
-  socket.on('iptv_ended', function() {
-    if (!isIptvHost && iptvPlayer) {
-      hideIptvPlayer();
-      showNotification('主播结束了IPTV直播');
-    }
   });
 }
 
 function initSyncVideoPlayer() {
   syncVideoContainer = document.getElementById('syncVideoContainer');
   syncVideoPlayer = document.getElementById('syncVideo');
-
+  
   syncVideoPlayer.addEventListener('play', onVideoPlay);
   syncVideoPlayer.addEventListener('pause', onVideoPause);
   syncVideoPlayer.addEventListener('seeked', onVideoSeeked);
@@ -823,12 +753,6 @@ function showSyncPlayer(videoUrl) {
   syncVideoContainer.style.display = 'block';
   syncVideoPlayer.src = videoUrl;
   syncVideoPlayer.load();
-}
-
-function hideSyncPlayer() {
-  syncVideoContainer.style.display = 'none';
-  syncVideoPlayer.pause();
-  syncVideoPlayer.src = '';
 }
 
 function leaveSyncVideo() {
