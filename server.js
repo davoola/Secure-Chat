@@ -85,7 +85,8 @@ function getRoom(roomID) {
       iptvHost: null,
       iptvParticipants: new Set()
     };
-	if (isSpecialRoom(roomID)) {
+	
+    if (isSpecialRoom(roomID)) {
       room.password = getSpecialRoomPassword(roomID);
     }
     rooms.set(roomID, room);
@@ -95,7 +96,7 @@ function getRoom(roomID) {
 
 function getSpecialRoomPassword(roomID) {
   switch(roomID) { // Special roomID && Password
-    case "MyLove": return "5201314"; 
+    case "MyLove": return "5201314";
     case "Tech": return "abc";
     case "Sci": return "xyz";
     default: return null;
@@ -152,7 +153,7 @@ io.sockets.on("connection", function (socket) {
 
     if (isSpecialRoom(roomID)) {
       if (roomID === "MyLove") {
-        if (username !== "Jack" && username !== "Amy") { // Special Special UserName
+        if (username !== "Jack" && username !== "Amy") { // Special UserName
           socket.emit("unauthorized user");
           return;
         }
@@ -162,13 +163,13 @@ io.sockets.on("connection", function (socket) {
         return;
       }
     }
+	
     else {
       let isFirstPerson = room.users.size === 0;
-	  
       if (isFirstPerson && password !== "") {
         room.password = password;
       }
-	  
+
       if (room.password && password !== room.password) {
         socket.emit("invalid password");
         return;
@@ -192,8 +193,7 @@ io.sockets.on("connection", function (socket) {
     };
     io.to(roomID).emit("message", data);
     io.to(roomID).emit("update users", Array.from(room.users.values()));
-    
-    // 新增：发送当前公告给新加入的用户
+
     if (room.announcement) {
       socket.emit("update announcement", md2html(room.announcement));
     }
@@ -203,8 +203,7 @@ io.sockets.on("connection", function (socket) {
       socket.emit("chat history", chatHistory);
     }
   });
-  
-    // 新增：视频同步播放功能
+
   socket.on("start_sync_video", function(data) {
     const room = getRoom(data.roomID);
     const user = room.users.get(socket.id);
@@ -268,13 +267,6 @@ io.sockets.on("connection", function (socket) {
       socket.to(data.roomID).emit('sync_video_accepted', {
         videoId: data.videoId,
         username: user.username
-    });
-	
-      socket.emit('message', {
-        content: "你已成功加入视频同步播放！",
-        sender: "Admin",
-        type: "TEXT",
-        timestamp: new Date().toISOString()
       });
     }
   });
@@ -291,28 +283,27 @@ io.sockets.on("connection", function (socket) {
     }
   });
 
-  socket.on('leave_sync_video', function(data) {
+  socket.on('sync_video_ended', function(data) {
     const room = getRoom(data.roomID);
-    const user = room.users.get(socket.id);
-    
-    if (room.syncParticipants) {
-      room.syncParticipants.delete(socket.id);
-    }
     
     if (room.currentSyncVideo && room.currentSyncVideo.initiator === socket.id) {
       room.currentSyncVideo = null;
       room.syncParticipants.clear();
+      socket.to(data.roomID).emit('sync_video_ended');
     }
-    
-    socket.to(data.roomID).emit('message', {
-      content: `${user.username} 退出了视频同步播放`,
-      sender: "Admin",
-      type: "TEXT",
-      timestamp: new Date().toISOString()
-    });
   });
 
-  // Add new IPTV socket handlers
+  socket.on('sync_video_left', function(data) {
+    const room = getRoom(data.roomID);
+    
+    if (room.syncParticipants) {
+      room.syncParticipants.delete(socket.id);
+      socket.to(data.roomID).emit('sync_video_left', {
+        username: data.username
+      });
+    }
+  });
+
   socket.on('iptv_invitation', function(data) {
     const room = getRoom(data.roomID);
     const user = room.users.get(socket.id);
@@ -347,8 +338,8 @@ io.sockets.on("connection", function (socket) {
     
     if (room.iptvHost) {
       io.to(room.iptvHost).emit('iptv_declined', {
-		  username: user.username
-	  });
+        username: user.username
+      });
     }
   });
 
@@ -356,19 +347,25 @@ io.sockets.on("connection", function (socket) {
     const room = getRoom(data.roomID);
     
     if (room.iptvHost === socket.id) {
-      const user = room.users.get(socket.id);
       room.iptvHost = null;
       room.iptvParticipants.clear();
-      
-      socket.to(data.roomID).emit('iptv_ended');
-      io.to(data.roomID).emit('message', {
-        content: `${user.username} 结束了IPTV直播`,
-        sender: "Admin",
-        type: "TEXT",
-        timestamp: new Date().toISOString()
+      socket.to(data.roomID).emit('iptv_left', {
+		username: data.username  
+	  });
+    }
+  });
+
+  socket.on('iptv_left', function(data) {
+    const room = getRoom(data.roomID);
+    const user = room.users.get(socket.id);
+    
+    if (room.iptvParticipants) {
+      room.iptvParticipants.delete(socket.id);
+      socket.to(data.roomID).emit('iptv_left', {
+        username: data.username
       });
     }
-  }); //end iptv
+  });
 
   socket.on("update announcement", function (newAnnouncement) {
     let roomID = userID2roomID.get(socket.id);
@@ -394,16 +391,15 @@ io.sockets.on("connection", function (socket) {
 
   socket.on("change username", function (newUsername, roomID = "/") {
     let room = getRoom(roomID);
-    let oldUsername = room.users.get(socket.id).username;
-	
-	// Special handling for MyLove room
-	if (roomID === "MyLove") {
-		if (newUsername !== "Jack" && newUsername !== "Amy") { //Special Special UserName
-		socket.emit("username change failed", "千山鸟飞绝，唯待知音来...");
-		return;
-		}
-	}
-	
+    let oldUsername = room.users.get(socket.id).username;	
+    
+    if (roomID === "MyLove") {
+      if (newUsername !== "Jack" && newUsername !== "Amy") {
+        socket.emit("username change failed", "千山鸟飞绝，唯待知音来...");
+        return;
+      }
+    }
+    
     if (room.usernameSet.has(newUsername) && newUsername !== oldUsername) {
       socket.emit("username change failed", "用户昵称已被占用");
       return;
@@ -483,26 +479,28 @@ io.sockets.on("connection", function (socket) {
         room.users.delete(socket.id);
         room.usernameSet.delete(username);
         
-        if (room.syncParticipants) {
+        if (room.syncParticipants && room.syncParticipants.has(socket.id)) {
           room.syncParticipants.delete(socket.id);
-        }
-        
-        if (room.currentSyncVideo && room.currentSyncVideo.initiator === socket.id) {
-          room.currentSyncVideo = null;
-          room.syncParticipants.clear();
+          socket.to(roomID).emit('sync_video_left', { username });
+          
+          if (room.currentSyncVideo && room.currentSyncVideo.initiator === socket.id) {
+            room.currentSyncVideo = null;
+            socket.to(roomID).emit('sync_video_ended');
+          }
+        } else if (room.iptvParticipants.has(socket.id)) {
+          room.iptvParticipants.delete(socket.id);
+          socket.to(roomID).emit('iptv_left', { username });
         }
 
-        // Handle IPTV host disconnection
         if (room.iptvHost === socket.id) {
           room.iptvHost = null;
-          room.iptvParticipants.clear();
           socket.to(roomID).emit('iptv_ended');
         }
-		
+        
         if (room.users.size === 0) {
           rooms.delete(roomID);
         }
-		
+        
         let data = {
           content: `${username} 已离开！`,
           sender: "Admin",
@@ -517,6 +515,7 @@ io.sockets.on("connection", function (socket) {
 });
 
 const PORT = process.env.PORT || 3000;
+
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });

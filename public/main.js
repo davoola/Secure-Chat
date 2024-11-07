@@ -39,7 +39,7 @@ function filename2type(fileName) {
   let videoFormats = [
     "mp4",
     "webm",
-	"m3u8",
+    "m3u8",
   ];
   if (imageFormats.includes(extension)) {
     return "IMAGE";
@@ -125,6 +125,7 @@ function register() {
     window.location.href = "/";
   }
 }
+
 function processInput(input) {
   input = input.trim();
   if (input.startsWith("announce ")) {
@@ -256,8 +257,7 @@ function initSocket() {
     registered = true;
     clearInputBox();
   });
-  
-  // 视频同步相关的事件处理
+
   socket.on('sync_video_invitation', function(data) {
     const invitation = document.createElement('div');
     invitation.className = 'sync-invitation';
@@ -280,44 +280,11 @@ function initSocket() {
   });
 
   socket.on('sync_video_accepted', function(data) {
-    showNotification(`${data.username} 接受了同步观看视频`);
-  }); 
-
-  socket.on('sync_video_declined', function(data) {
-    showNotification(`${data.username} 拒绝了同步观看视频`);
+    showNotification(`${data.username} 接受了同步观看视频`, 'success');
   });
 
-  socket.on('sync_video_control', function(data) {
-    if (!currentSyncVideoId || currentSyncVideoId !== data.videoId) return;  
-    const timeDiff = Math.abs(syncVideoPlayer.currentTime - data.time);
-	
-    syncVideoPlayer.removeEventListener('seeked', onVideoSeeked);
-    syncVideoPlayer.removeEventListener('play', onVideoPlay);
-    syncVideoPlayer.removeEventListener('pause', onVideoPause);
-  
-    switch (data.type) {
-      case 'play':
-        if (timeDiff > 0.5) {
-			syncVideoPlayer.currentTime = data.time;
-		}
-		syncVideoPlayer.play().catch(console.error);
-		break;
-      case 'pause':
-        if (timeDiff > 0.5) {
-			syncVideoPlayer.currentTime = data.time;
-		}
-		syncVideoPlayer.pause();
-		break;
-      case 'seek':
-		syncVideoPlayer.currentTime = data.time;
-		break;
-	}
-	
-    setTimeout(() => {
-      syncVideoPlayer.addEventListener('seeked', onVideoSeeked);
-      syncVideoPlayer.addEventListener('play', onVideoPlay);
-      syncVideoPlayer.addEventListener('pause', onVideoPause);
-	}, 100);
+  socket.on('sync_video_declined', function(data) {
+    showNotification(`${data.username} 拒绝了同步观看视频`, 'warning');
   });
 
   socket.on('sync_video_join', function(data) {
@@ -339,9 +306,45 @@ function initSocket() {
     } else {
       syncVideoPlayer.pause();
     }
-  });  
+  });
 
-  // 整合IPTV相关的socket事件
+  socket.on('sync_video_control', function(data) {
+    if (!currentSyncVideoId || currentSyncVideoId !== data.videoId) return;  
+    const timeDiff = Math.abs(syncVideoPlayer.currentTime - data.time);
+    
+    syncVideoPlayer.removeEventListener('seeked', onVideoSeeked);
+    syncVideoPlayer.removeEventListener('play', onVideoPlay);
+    syncVideoPlayer.removeEventListener('pause', onVideoPause);
+  
+    switch (data.type) {
+      case 'play':
+        if (timeDiff > 0.5) {
+          syncVideoPlayer.currentTime = data.time;
+        }
+        syncVideoPlayer.play().catch(console.error);
+        break;
+      case 'pause':
+        if (timeDiff > 0.5) {
+          syncVideoPlayer.currentTime = data.time;
+        }
+        syncVideoPlayer.pause();
+        break;
+      case 'seek':
+        syncVideoPlayer.currentTime = data.time;
+        break;
+    }
+    
+    setTimeout(() => {
+      syncVideoPlayer.addEventListener('seeked', onVideoSeeked);
+      syncVideoPlayer.addEventListener('play', onVideoPlay);
+      syncVideoPlayer.addEventListener('pause', onVideoPause);
+    }, 100);
+  });
+
+  socket.on('sync_video_left', function(data) {
+    showNotification(`${data.username} 退出了视频同步播放`, 'info');
+  });
+
   socket.on('iptv_invitation', function(data) {
     const invitation = document.createElement('div');
     invitation.className = 'sync-invitation';
@@ -364,18 +367,15 @@ function initSocket() {
   });
 
   socket.on('iptv_accepted', function(data) {
-    showNotification(`${data.username} 接受了IPTV直播邀请`);
+    showNotification(`${data.username} 接受了IPTV直播邀请`, 'success');
   });
 
   socket.on('iptv_declined', function(data) {
-    showNotification(`${data.username} 拒绝了IPTV直播邀请`);
+    showNotification(`${data.username} 拒绝了IPTV直播邀请`, 'warning');
   });
 
-  socket.on('iptv_ended', function() {
-    if (!isIptvHost && iptvPlayer) {
-      leaveIptvPlayer();
-      showNotification('主播结束了IPTV直播');
-    }
+  socket.on('iptv_left', function(data) {    
+	showNotification(`${data.username} 退出了IPTV直播`, 'info');	
   });
   
   socket.on("update announcement", function (htmlAnnouncement) {
@@ -403,7 +403,7 @@ function initSocket() {
   });
   socket.on("invalid password", function () {
     registered = false;
-	localStorage.removeItem("password");
+    localStorage.removeItem("password");
     alert("密码错误，请返回首页重新输入！");
     window.location.href = "/";
   });
@@ -531,15 +531,15 @@ function copyCodeToClipboard(button) {
   }, 2000);
 }
 
-function playVideoFromUrl() {//在线视频同步播放
+function playVideoFromUrl() {
   const videoUrl = document.getElementById('videoUrl').value.trim();
   if (!videoUrl) {
-    alert('请输入有效的视频URL地址');
+    showNotification('请输入有效的视频URL地址', 'error');
     return;
   }
   
   if (videoUrl.toLowerCase().endsWith('.m3u8')) {
-	playIptvStream(videoUrl);
+    startIptvStream(videoUrl);
   } else {
     startSyncVideo(videoUrl);
   }
@@ -547,7 +547,7 @@ function playVideoFromUrl() {//在线视频同步播放
   document.getElementById('videoUrl').value = '';
 }
 
-function initIptvPlayer() {//IPTV直播源
+function initIptvPlayer() {
   if (!iptvPlayer) {
     iptvPlayer = videojs('iptvPlayer', {
       fluid: true,
@@ -561,17 +561,16 @@ function initIptvPlayer() {//IPTV直播源
           overrideNative: true,
           withCredentials: true,
           xhrSetup: function(xhr, url) {
-            // Support IPv6 URLs
             xhr.setRequestHeader('Accept', 'application/x-mpegURL');
             xhr.withCredentials = true;
           }
         }
       }
-    });	
+    });
   }
 }
 
-function playIptvStream(url, isInvited = false) {
+function startIptvStream(url) {
   const iptvContainer = document.getElementById('iptvPlayerContainer');
   
   if (!iptvPlayer) {
@@ -580,16 +579,13 @@ function playIptvStream(url, isInvited = false) {
   
   iptvContainer.style.display = 'block';
   currentIptvUrl = url;
-  isIptvHost = !isInvited;
+  isIptvHost = true;
   
-  if (!isInvited) {
-    socket.emit('iptv_invitation', {
-      url: url,
-      roomID: roomID
-    });
-  }
-  
-  // Ensure IPv6 URLs are properly encoded
+  socket.emit('iptv_invitation', {
+    url: url,
+    roomID: roomID
+  });
+
   const encodedUrl = url.replace(/\[/g, '%5B').replace(/\]/g, '%5D');
   
   iptvPlayer.src({
@@ -603,9 +599,11 @@ function playIptvStream(url, isInvited = false) {
   });
 }
 
+
 function leaveIptvPlayer() {
   const iptvContainer = document.getElementById('iptvPlayerContainer');
   iptvContainer.style.display = 'none';
+  
   if (iptvPlayer) {
     iptvPlayer.pause();
     iptvPlayer.src('');
@@ -613,9 +611,17 @@ function leaveIptvPlayer() {
     
     if (isIptvHost) {
       socket.emit('iptv_ended', {
-        roomID: roomID
+        roomID: roomID,
+        username: username
       });
+    } else {
+      socket.emit('iptv_left', {
+        roomID: roomID,
+        username: username
+      });	
     }
+    isIptvHost = false;
+    showNotification('已退出IPTV直播', 'info');
   }
 }
 
@@ -638,11 +644,33 @@ function acceptIptv(url) {
     invitation.remove();
   }
   
-  playIptvStream(url, true);
+  const iptvContainer = document.getElementById('iptvPlayerContainer');
+  
+  if (!iptvPlayer) {
+    initIptvPlayer();
+  }
+  
+  iptvContainer.style.display = 'block';
+  currentIptvUrl = url;
+  isIptvHost = false;
+  
+  const encodedUrl = url.replace(/\[/g, '%5B').replace(/\]/g, '%5D');
+  
+  iptvPlayer.src({
+    src: encodedUrl,
+    type: 'application/x-mpegURL'
+  });
+  
+  iptvPlayer.play().catch(error => {
+    console.error('播放错误:', error);
+    showNotification('播放失败，请检查直播源是否有效', 'error');
+  });
+  
   socket.emit('iptv_accepted', {
     roomID: roomID
   });
-  showNotification('已加入IPTV直播');
+  
+  showNotification('已加入IPTV直播', 'success');
 }
 
 function declineIptv() {
@@ -659,16 +687,14 @@ function declineIptv() {
 function initSyncVideoPlayer() {
   syncVideoContainer = document.getElementById('syncVideoContainer');
   syncVideoPlayer = document.getElementById('syncVideo');
-  
+
   syncVideoPlayer.addEventListener('play', onVideoPlay);
   syncVideoPlayer.addEventListener('pause', onVideoPause);
   syncVideoPlayer.addEventListener('seeked', onVideoSeeked);
   
-  // 添加拖拽功能
   const header = syncVideoContainer.querySelector('.sync-video-header');
   header.addEventListener('mousedown', startDragging);
   
-  // 添加缩放功能
   const resizeHandle = syncVideoContainer.querySelector('.resize-handle');
   resizeHandle.addEventListener('mousedown', initResize);
 }
@@ -694,7 +720,6 @@ function drag(e) {
   syncVideoContainer.style.left = `${initialX + dx}px`;
   syncVideoContainer.style.top = `${initialY + dy}px`;
 }
-
 
 function stopDragging() {
   isDragging = false;
@@ -734,7 +759,6 @@ function stopResizing() {
 }
 
 function startSyncVideo(videoUrl) {
-  
   if (!syncVideoContainer) {
     initSyncVideoPlayer();
   }
@@ -746,10 +770,6 @@ function startSyncVideo(videoUrl) {
     roomID
   });
   
-  showSyncPlayer(videoUrl);
-}
-
-function showSyncPlayer(videoUrl) {
   syncVideoContainer.style.display = 'block';
   syncVideoPlayer.src = videoUrl;
   syncVideoPlayer.load();
@@ -757,14 +777,16 @@ function showSyncPlayer(videoUrl) {
 
 function leaveSyncVideo() {
   if (currentSyncVideoId) {
-    socket.emit('leave_sync_video', {
+    socket.emit('sync_video_left', {
       videoId: currentSyncVideoId,
-      roomID
+      roomID,
+      username: username
     });
     currentSyncVideoId = null;
     syncVideoContainer.style.display = 'none';
     syncVideoPlayer.pause();
     syncVideoPlayer.src = '';
+    showNotification('已退出视频同步播放', 'info');
   }
 }
 
@@ -774,7 +796,10 @@ function acceptSync(videoId, url) {
   }
   
   currentSyncVideoId = videoId;
-  showSyncPlayer(url);
+  syncVideoContainer.style.display = 'block';
+  syncVideoPlayer.src = url;
+  syncVideoPlayer.load();
+  
   socket.emit('sync_video_accepted', { videoId, roomID });  
   socket.emit('sync_video_join', {
     videoId: currentSyncVideoId,
@@ -843,19 +868,19 @@ window.onload = function () {
   initSyncVideoPlayer();
   
   inputElement.addEventListener("keydown", function (e) {
-	if (e.key === "Enter") {
-	  if (e.shiftKey) {	 
-		return;
-	  }
-	  e.preventDefault();
-	  send();
-	}
+    if (e.key === "Enter") {
+      if (e.shiftKey) { 
+        return;
+      }
+      e.preventDefault();
+      send();
+    }
   });
   
   videoUrlElement.addEventListener("keydown", function (e) {
-	if (e.key === "Enter") {	  
-	  e.preventDefault();
-	  playVideoFromUrl();
-	}
+    if (e.key === "Enter") {  
+      e.preventDefault();
+      playVideoFromUrl();
+    }
   });
 };
