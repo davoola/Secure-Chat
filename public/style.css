@@ -746,10 +746,12 @@ table th[align="right"] {
   color: #999;
 }
 
-/* Style for Video Sync Player */
-
-.sync-video-container {
+/* 更新播放器容器的样式 */
+.sync-video-container,
+.iptv-player-container {
   position: fixed;
+  top: 40%;
+  left: 50%;
   transform: translate(-50%, -50%);
   background: rgba(32, 32, 32, 0.95);
   border-radius: 8px;
@@ -762,8 +764,9 @@ table th[align="right"] {
 }
 
 @media screen and (min-width: 769px) {
-  .sync-video-container {
-	top: 40%;
+  .sync-video-container,
+  .iptv-player-container {
+    top: 40%;
 	left: 50%;
     width: 800px;
     height: 500px;
@@ -771,15 +774,17 @@ table th[align="right"] {
 }
 
 @media screen and (max-width: 768px) {
-  .sync-video-container {
-	top: 25%;
-	left: 50%;
+  .sync-video-container,
+  .iptv-player-container {
+    top: 25%;
+	left: 50%
     width: 95vw;
     height: calc(95vw * 0.75);
   }
 }
 
-.sync-video-header {
+.sync-video-header,
+.iptv-player-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -790,6 +795,45 @@ table th[align="right"] {
   cursor: move;
 }
 
+/* 调整大小的手柄样式 */
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: white;
+  opacity: 0.6;
+  transition: opacity 0.3s;
+}
+
+.resize-handle:hover {
+  opacity: 1;
+}
+
+.resize-handle.top-left {
+  top: 0;
+  left: 0;
+  cursor: nw-resize;
+}
+
+.resize-handle.top-right {
+  top: 0;
+  right: 0;
+  cursor: ne-resize;
+}
+
+.resize-handle.bottom-left {
+  bottom: 0;
+  left: 0;
+  cursor: sw-resize;
+}
+
+.resize-handle.bottom-right {
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+}
+
+/* Style for Video Sync Player */
 .sync-video-title {
   color: white;
   font-size: 18px;
@@ -897,16 +941,6 @@ table th[align="right"] {
   }
 }
 
-.resize-handle {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  background: white;
-  right: 0;
-  bottom: 0;
-  cursor: se-resize;
-}
-
 .sync-notification {
   margin-right: auto;	
   position: fixed;
@@ -927,46 +961,6 @@ table th[align="right"] {
 }
 
 /* Styles for IPTV Player */
-
-.iptv-player-container {
-  position: fixed;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(32, 32, 32, 0.95);
-  border-radius: 8px;
-  padding: 15px;
-  z-index: 1000;
-  width: 800px;
-  height: 600px;
-  display: none;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-@media screen and (min-width: 769px) {
-  .iptv-player-container {
-    width: 800px;
-    height: 500px;
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .iptv-player-container {
-    width: 95vw;
-    height: calc(95vw * 0.75);
-  }
-}
-
-.iptv-player-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
-  margin-bottom: 10px;
-}
-
 .iptv-player-title {
   color: white;
   font-size: 18px;

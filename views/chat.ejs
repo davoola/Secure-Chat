@@ -50,27 +50,27 @@
         <button onclick="send()" class="send-button">发送</button>
     </div>
     </div>
-    <div id="syncVideoContainer" class="sync-video-container">
-        <div class="sync-video-header">
-            <div class="sync-video-title">Watch Together</div>
-            <div class="sync-video-controls">
-                <button onclick="leaveSyncVideo()">关闭</button>
-            </div>
-        </div>
-        <video id="syncVideo" class="sync-video-player" controls></video>
-        <div class="resize-handle"></div>
-    </div>
-    <div id="iptvPlayerContainer" class="iptv-player-container">
-        <div class="iptv-player-header">
-            <div class="iptv-player-title">IPTV Player</div>
-            <div class="iptv-player-controls">
-                <button onclick="leaveIptvPlayer()">关闭</button>
-            </div>
-        </div>
-        <video id="iptvPlayer" class="video-js vjs-default-skin" controls>
-            <p class="vjs-no-js">请启用JavaScript以观看直播</p>
-        </video>
-        <div class="resize-handle"></div>
-    </div>
+	
+	<div id="syncVideoContainer" class="sync-video-container">
+		<div class="sync-video-header">
+			<div class="sync-video-title">Watch Together</div>
+			<div class="sync-video-controls">
+				<button onclick="leaveSyncVideo()">关闭</button>
+			</div>
+		</div>
+		<video id="syncVideo" class="sync-video-player" controls></video>
+	</div>
+
+	<div id="iptvPlayerContainer" class="iptv-player-container">
+		<div class="iptv-player-header">
+			<div class="iptv-player-title">IPTV Player</div>
+			<div class="iptv-player-controls">
+				<button onclick="leaveIptvPlayer()">关闭</button>
+			</div>
+		</div>
+		<video id="iptvPlayer" class="video-js vjs-default-skin" controls>
+			<p class="vjs-no-js">请启用JavaScript以观看直播</p>
+		</video>
+	</div>
 </body>
 </html>

@@ -169,7 +169,7 @@ io.sockets.on("connection", function (socket) {
       if (isFirstPerson && password !== "") {
         room.password = password;
       }
-
+	  
       if (room.password && password !== room.password) {
         socket.emit("invalid password");
         return;
@@ -193,7 +193,7 @@ io.sockets.on("connection", function (socket) {
     };
     io.to(roomID).emit("message", data);
     io.to(roomID).emit("update users", Array.from(room.users.values()));
-
+	
     if (room.announcement) {
       socket.emit("update announcement", md2html(room.announcement));
     }
@@ -391,7 +391,7 @@ io.sockets.on("connection", function (socket) {
 
   socket.on("change username", function (newUsername, roomID = "/") {
     let room = getRoom(roomID);
-    let oldUsername = room.users.get(socket.id).username;	
+    let oldUsername = room.users.get(socket.id).username;
     
     if (roomID === "MyLove") {
       if (newUsername !== "Jack" && newUsername !== "Amy") {
@@ -515,7 +515,6 @@ io.sockets.on("connection", function (socket) {
 });
 
 const PORT = process.env.PORT || 3000;
-
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });

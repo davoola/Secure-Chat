@@ -567,7 +567,24 @@ function initIptvPlayer() {
         }
       }
     });
+
+    const iptvContainer = document.getElementById('iptvPlayerContainer');
+    const header = iptvContainer.querySelector('.iptv-player-header');
+    header.addEventListener('mousedown', (e) => startDragging(e, iptvContainer));
+
+    addResizeHandles(iptvContainer);
   }
+}
+
+function addResizeHandles(container) {
+  const positions = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+  
+  positions.forEach(pos => {
+    const handle = document.createElement('div');
+    handle.className = `resize-handle ${pos}`;
+    handle.addEventListener('mousedown', (e) => initResize(e, container, pos));
+    container.appendChild(handle);
+  });
 }
 
 function startIptvStream(url) {
@@ -693,32 +710,40 @@ function initSyncVideoPlayer() {
   syncVideoPlayer.addEventListener('seeked', onVideoSeeked);
   
   const header = syncVideoContainer.querySelector('.sync-video-header');
-  header.addEventListener('mousedown', startDragging);
+  header.addEventListener('mousedown', (e) => startDragging(e, syncVideoContainer));
   
-  const resizeHandle = syncVideoContainer.querySelector('.resize-handle');
-  resizeHandle.addEventListener('mousedown', initResize);
+  addResizeHandles(syncVideoContainer);
 }
 
-function startDragging(e) {
+function startDragging(e, container) {
+  if (e.target.classList.contains('resize-handle')) return;
+  
   isDragging = true;
   dragStartX = e.clientX;
   dragStartY = e.clientY;
-  initialX = syncVideoContainer.offsetLeft;
-  initialY = syncVideoContainer.offsetTop;
+  initialX = container.offsetLeft;
+  initialY = container.offsetTop;
   
-  document.addEventListener('mousemove', drag);
-  document.addEventListener('mouseup', stopDragging);
+  const dragMove = (e) => drag(e, container);
+  const dragEnd = () => {
+    isDragging = false;
+    document.removeEventListener('mousemove', dragMove);
+    document.removeEventListener('mouseup', dragEnd);
+  };
+  
+  document.addEventListener('mousemove', dragMove);
+  document.addEventListener('mouseup', dragEnd);
 }
 
-function drag(e) {
+function drag(e, container) {
   if (!isDragging) return;
   
   e.preventDefault();
   const dx = e.clientX - dragStartX;
   const dy = e.clientY - dragStartY;
   
-  syncVideoContainer.style.left = `${initialX + dx}px`;
-  syncVideoContainer.style.top = `${initialY + dy}px`;
+  container.style.left = `${initialX + dx}px`;
+  container.style.top = `${initialY + dy}px`;
 }
 
 function stopDragging() {
@@ -727,29 +752,80 @@ function stopDragging() {
   document.removeEventListener('mouseup', stopDragging);
 }
 
-function initResize(e) {
+function initResize(e, container, position) {
+  e.preventDefault();
+  e.stopPropagation();
+  
   isResizing = true;
   resizeStartX = e.clientX;
   resizeStartY = e.clientY;
-  initialWidth = syncVideoContainer.offsetWidth;
-  initialHeight = syncVideoContainer.offsetHeight;
+  initialWidth = container.offsetWidth;
+  initialHeight = container.offsetHeight;
+  initialX = container.offsetLeft;
+  initialY = container.offsetTop;
   
-  document.addEventListener('mousemove', resize);
-  document.addEventListener('mouseup', stopResizing);
+  const resizeMove = (e) => resize(e, container, position);
+  const resizeEnd = () => {
+    isResizing = false;
+    document.removeEventListener('mousemove', resizeMove);
+    document.removeEventListener('mouseup', resizeEnd);
+  };
+  
+  document.addEventListener('mousemove', resizeMove);
+  document.addEventListener('mouseup', resizeEnd);
 }
 
-function resize(e) {
+function resize(e, container, position) {
   if (!isResizing) return;
   
   e.preventDefault();
   const dx = e.clientX - resizeStartX;
   const dy = e.clientY - resizeStartY;
   
-  const newWidth = Math.max(320, initialWidth + dx);
-  const newHeight = Math.max(240, initialHeight + dy);
+  let newWidth = initialWidth;
+  let newHeight = initialHeight;
+  let newX = initialX;
+  let newY = initialY;
   
-  syncVideoContainer.style.width = `${newWidth}px`;
-  syncVideoContainer.style.height = `${newHeight}px`;
+  switch (position) {
+    case 'top-left':
+      newWidth = initialWidth - dx;
+      newHeight = initialHeight - dy;
+      newX = initialX + dx;
+      newY = initialY + dy;
+      break;
+    case 'top-right':
+      newWidth = initialWidth + dx;
+      newHeight = initialHeight - dy;
+      newY = initialY + dy;
+      break;
+    case 'bottom-left':
+      newWidth = initialWidth - dx;
+      newHeight = initialHeight + dy;
+      newX = initialX + dx;
+      break;
+    case 'bottom-right':
+      newWidth = initialWidth + dx;
+      newHeight = initialHeight + dy;
+      break;
+  }
+  
+  const minWidth = 320;
+  const minHeight = 240;
+  
+  if (newWidth >= minWidth) {
+    container.style.width = `${newWidth}px`;
+    if (position.includes('left')) {
+      container.style.left = `${newX}px`;
+    }
+  }
+  
+  if (newHeight >= minHeight) {
+    container.style.height = `${newHeight}px`;
+    if (position.includes('top')) {
+      container.style.top = `${newY}px`;
+    }
+  }
 }
 
 function stopResizing() {
