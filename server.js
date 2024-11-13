@@ -39,6 +39,15 @@ app.use(function (req, res) {
 let rooms = new Map();
 let userID2roomID = new Map();
 
+const RESTRICTED_USERNAME_PATTERNS = [
+  /^admin$/i,
+  /^system$/i
+];
+
+function isRestrictedUsername(username) {
+  return RESTRICTED_USERNAME_PATTERNS.some(pattern => pattern.test(username));
+}
+
 function getAnnouncementFilePath(roomID) {
   return path.join(__dirname, 'public/upload', `__announcement-${roomID}.json`);
 }
@@ -145,8 +154,13 @@ io.sockets.on("connection", function (socket) {
   socket.on("register", function (username, roomID = "/", password = "") {
     let room = getRoom(roomID);
     username = username.trim();
+	
+    if (isRestrictedUsername(username)) {
+      socket.emit("register failed", "昵称注册失败：此用户名不允许使用");
+      return;
+    }
 
-    if (room.usernameSet.has(username) || username === "Admin") {
+    if (room.usernameSet.has(username)) {
       socket.emit("conflict username");
       return;
     }
@@ -392,6 +406,11 @@ io.sockets.on("connection", function (socket) {
   socket.on("change username", function (newUsername, roomID = "/") {
     let room = getRoom(roomID);
     let oldUsername = room.users.get(socket.id).username;
+	
+    if (isRestrictedUsername(newUsername)) {
+      socket.emit("username change failed", "此用户名不允许使用");
+      return;
+    }
     
     if (roomID === "MyLove") {
       if (newUsername !== "Jack" && newUsername !== "Amy") {

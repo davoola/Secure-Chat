@@ -381,6 +381,11 @@ function initSocket() {
   socket.on("update announcement", function (htmlAnnouncement) {
     announcementElement.innerHTML = htmlAnnouncement;
   });
+  socket.on("register failed", function (reason) {
+    alert(reason);
+    localStorage.removeItem("username");
+    window.location.href = "/";
+  });
   
   socket.on("username change success", function (newUsername) {
     username = newUsername;
