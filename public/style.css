@@ -777,7 +777,7 @@ table th[align="right"] {
   .sync-video-container,
   .iptv-player-container {
     top: 25%;
-	left: 50%
+	left: 50%;
     width: 95vw;
     height: calc(95vw * 0.75);
   }
